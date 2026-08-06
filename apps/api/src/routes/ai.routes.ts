@@ -1,37 +1,38 @@
 import { Router, Request, Response } from 'express';
+import { summarize as summarizeGemini, GeminiApiError } from '../services/ai/geminiService';
 
 const router = Router();
 
 /**
- * Express Router for AI endpoints returning mock JSON.
- * No Gemini integration yet.
+ * Express Router for AI endpoints.
  * 
- * Routes:
- * - POST /ai/summarize
+ * Endpoints:
+ * - POST /ai/summarize (Uses Gemini API to summarize transcripts into { summary, keyPoints, importantConcepts })
  * - POST /ai/chat
  * - POST /ai/quiz
  * - POST /ai/flashcards
  */
 
-const handleSummarize = (req: Request, res: Response) => {
-  const { text, maxLength = 'medium' } = req.body || {};
-  res.json({
-    success: true,
-    data: {
-      title: 'AI Summary (Mock Response)',
-      summary: text
-        ? `Mock summary generated for provided text (${text.length} characters).`
-        : 'This is a mock summary response generated without external API dependencies.',
-      maxLength,
-      keyTakeaways: [
-        'Clean Express router architecture decouples routing from AI services.',
-        'Mock JSON responses facilitate seamless frontend development.',
-        'No external Gemini or LLM API calls are triggered in this stage.',
-      ],
-      sentiment: 'positive',
-      estimatedReadTimeMinutes: 2,
-    },
-  });
+const handleSummarize = async (req: Request, res: Response) => {
+  try {
+    const transcriptText = req.body?.transcript || req.body?.text || (typeof req.body === 'string' ? req.body : '');
+    
+    if (!transcriptText || String(transcriptText).trim() === '') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'A non-empty "transcript" string field is required in request body.',
+      });
+    }
+
+    const result = await summarizeGemini(transcriptText);
+    return res.json(result);
+  } catch (error: any) {
+    console.error('[POST /ai/summarize Error]:', error);
+    if (error instanceof GeminiApiError) {
+      return res.status(500).json({ error: error.name, message: error.message });
+    }
+    return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while summarizing.' });
+  }
 };
 
 const handleChat = (req: Request, res: Response) => {
@@ -114,7 +115,7 @@ const handleFlashcards = (req: Request, res: Response) => {
   });
 };
 
-// Support both /ai/... routes and sub-mounted /... routes
+// Route definitions
 router.post(['/ai/summarize', '/summarize'], handleSummarize);
 router.post(['/ai/chat', '/chat'], handleChat);
 router.post(['/ai/quiz', '/quiz'], handleQuiz);
