@@ -1,18 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { summarize as summarizeGemini, GeminiApiError } from '../services/ai/geminiService';
+import { AIController } from '../controllers/ai.controller';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-/**
- * Express Router for AI endpoints.
- * 
- * Endpoints:
- * - POST /ai/summarize (Uses Gemini API to summarize transcripts into { summary, keyPoints, importantConcepts })
- * - POST /ai/chat
- * - POST /ai/quiz
- * - POST /ai/flashcards
- */
-
+// Endpoint: POST /ai/summarize (Uses Gemini API to summarize transcripts into { summary, keyPoints, importantConcepts })
 const handleSummarize = async (req: Request, res: Response) => {
   try {
     const transcriptText = req.body?.transcript || req.body?.text || (typeof req.body === 'string' ? req.body : '');
@@ -115,10 +108,16 @@ const handleFlashcards = (req: Request, res: Response) => {
   });
 };
 
-// Route definitions
+// Standalone AI endpoints
 router.post(['/ai/summarize', '/summarize'], handleSummarize);
 router.post(['/ai/chat', '/chat'], handleChat);
 router.post(['/ai/quiz', '/quiz'], handleQuiz);
 router.post(['/ai/flashcards', '/flashcards'], handleFlashcards);
+
+// Protected video & AI controller endpoints
+router.post('/videos/:id/summarize', requireAuth, AIController.summarizeVideo);
+router.post('/videos/:id/doubt', requireAuth, AIController.askDoubt);
+router.post('/videos', requireAuth, AIController.createAndProcessVideo);
+router.get('/videos/:id', requireAuth, AIController.getVideoDetails);
 
 export default router;
