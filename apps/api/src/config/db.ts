@@ -6,8 +6,8 @@ export const connectDB = async (): Promise<void> => {
     const conn = await mongoose.connect(env.MONGODB_URI);
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
   } catch (error: any) {
-    console.error(`[MongoDB] Connection error: ${error.message}`);
-    process.exit(1);
+    console.warn(`⚠️ [MongoDB Warning]: ${error.message}`);
+    console.warn('⚠️ Server will continue running for route & AI endpoint testing.');
   }
 };
 
