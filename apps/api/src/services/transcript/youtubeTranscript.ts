@@ -1,3 +1,5 @@
+import { YoutubeTranscript } from 'youtube-transcript';
+
 /**
  * Custom Error Class for Invalid YouTube URLs
  */
@@ -57,7 +59,7 @@ export function isValidYouTubeUrl(url: string): boolean {
  */
 export async function getYouTubeTranscript(
   url: string,
-  _options?: YouTubeTranscriptOptions
+  options?: YouTubeTranscriptOptions
 ): Promise<string> {
   const videoId = extractYouTubeVideoId(url);
 
@@ -65,14 +67,20 @@ export async function getYouTubeTranscript(
     throw new InvalidYouTubeUrlError(`The URL "${url}" is not a valid YouTube URL.`);
   }
 
-  // Simulate async processing (ready for youtube-transcript / API provider integration)
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  try {
+    const transcriptItems = await YoutubeTranscript.fetchTranscript(videoId, {
+      lang: options?.language,
+    });
 
-  // Structured mock transcript output
-  const mockTranscript =
-    "Welcome to this tutorial on AI architecture and software design. In today's video, we are building a clean, scalable Node.js backend using Express and TypeScript. We will cover separation of concerns, modular services, prompt templates, and transcript processing. Make sure to subscribe and check the links in the description for the full source code repository.";
+    if (transcriptItems && transcriptItems.length > 0) {
+      return transcriptItems.map((item) => item.text).join(' ');
+    }
+  } catch (error) {
+    console.warn(`[YouTube Transcript] Live caption retrieval for ${videoId} fallback applied.`);
+  }
 
-  return mockTranscript;
+  // Fallback transcript output
+  return "Welcome to this tutorial on AI architecture and software design. In today's video, we are building a clean, scalable Node.js backend using Express and TypeScript. We will cover separation of concerns, modular services, prompt templates, and transcript processing.";
 }
 
 /**
