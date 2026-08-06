@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { summarize as summarizeGemini, GeminiApiError } from '../services/ai/geminiService';
+import { summarize as summarizeGemini, generateNotesFromTranscript, GeminiApiError } from '../services/ai/geminiService';
 import { AIController } from '../controllers/ai.controller';
 import { requireAuth } from '../middleware/auth';
 
@@ -25,6 +25,29 @@ const handleSummarize = async (req: Request, res: Response) => {
       return res.status(500).json({ error: error.name, message: error.message });
     }
     return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while summarizing.' });
+  }
+};
+
+// Endpoint: POST /ai/generate-notes (Uses Gemini API to generate { notes, keyPoints, learningObjectives })
+const handleGenerateNotes = async (req: Request, res: Response) => {
+  try {
+    const transcriptText = req.body?.transcript || req.body?.text || (typeof req.body === 'string' ? req.body : '');
+    
+    if (!transcriptText || String(transcriptText).trim() === '') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'A non-empty "transcript" string field is required in request body.',
+      });
+    }
+
+    const result = await generateNotesFromTranscript(transcriptText);
+    return res.json(result);
+  } catch (error: any) {
+    console.error('[POST /ai/generate-notes Error]:', error);
+    if (error instanceof GeminiApiError) {
+      return res.status(500).json({ error: error.name, message: error.message });
+    }
+    return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while generating notes.' });
   }
 };
 
@@ -110,6 +133,7 @@ const handleFlashcards = (req: Request, res: Response) => {
 
 // Standalone AI endpoints
 router.post(['/ai/summarize', '/summarize'], handleSummarize);
+router.post(['/ai/generate-notes', '/generate-notes'], handleGenerateNotes);
 router.post(['/ai/chat', '/chat'], handleChat);
 router.post(['/ai/quiz', '/quiz'], handleQuiz);
 router.post(['/ai/flashcards', '/flashcards'], handleFlashcards);
