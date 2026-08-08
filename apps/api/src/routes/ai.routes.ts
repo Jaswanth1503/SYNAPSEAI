@@ -1,5 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { summarize as summarizeGemini, generateNotesFromTranscript, GeminiApiError } from '../services/ai/geminiService';
+import {
+  summarize as summarizeGemini,
+  generateNotesFromTranscript,
+  generateFlashcardsFromTranscript,
+  GeminiApiError,
+} from '../services/ai/geminiService';
 import { AIController } from '../controllers/ai.controller';
 import { requireAuth } from '../middleware/auth';
 
@@ -48,6 +53,30 @@ const handleGenerateNotes = async (req: Request, res: Response) => {
       return res.status(500).json({ error: error.name, message: error.message });
     }
     return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while generating notes.' });
+  }
+};
+
+// Endpoint: POST /ai/flashcards (Uses Gemini API to generate flashcards [{ question, answer, difficulty, topic }])
+const handleFlashcards = async (req: Request, res: Response) => {
+  try {
+    const transcriptText = req.body?.transcript || req.body?.text || (typeof req.body === 'string' ? req.body : '');
+    const count = req.body?.count ? Number(req.body.count) : 3;
+
+    if (!transcriptText || String(transcriptText).trim() === '') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'A non-empty "transcript" string field is required in request body.',
+      });
+    }
+
+    const result = await generateFlashcardsFromTranscript({ transcript: transcriptText, count });
+    return res.json(result);
+  } catch (error: any) {
+    console.error('[POST /ai/flashcards Error]:', error);
+    if (error instanceof GeminiApiError) {
+      return res.status(500).json({ error: error.name, message: error.message });
+    }
+    return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while generating flashcards.' });
   }
 };
 
@@ -102,29 +131,6 @@ const handleQuiz = (req: Request, res: Response) => {
           ],
           correctOptionIndex: 1,
           explanation: 'Express Router creates modular, mountable route handlers.',
-        },
-      ],
-    },
-  });
-};
-
-const handleFlashcards = (req: Request, res: Response) => {
-  const { topic = 'Software Architecture', count = 2 } = req.body || {};
-  res.json({
-    success: true,
-    data: {
-      deckTitle: `Flashcards: ${topic}`,
-      totalCards: count,
-      flashcards: [
-        {
-          id: 'fc-1',
-          front: 'What is an Express Router?',
-          back: 'A mini Express application capable only of performing middleware and routing functions.',
-        },
-        {
-          id: 'fc-2',
-          front: 'Why use mock JSON in backend development?',
-          back: 'It unblocks frontend UI construction before live API integrations are connected.',
         },
       ],
     },

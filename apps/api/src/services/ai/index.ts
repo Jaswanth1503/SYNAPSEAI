@@ -5,8 +5,12 @@ export * as geminiService from './geminiService';
 export {
   summarize as summarizeGemini,
   generateNotesFromTranscript,
+  generateFlashcardsFromTranscript,
   GeminiApiError,
   SummarizeOutput,
   GenerateNotesInput,
   GenerateNotesOutput,
+  FlashcardItem,
+  GenerateFlashcardsFromTranscriptInput,
+  GenerateFlashcardsFromTranscriptOutput,
 } from './geminiService';
