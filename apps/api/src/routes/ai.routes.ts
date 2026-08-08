@@ -1,123 +1,22 @@
-import { Router, Request, Response } from 'express';
-import { summarize as summarizeGemini, GeminiApiError } from '../services/ai/geminiService';
+import { Router } from 'express';
 import { AIController } from '../controllers/ai.controller';
 import { requireAuth } from '../middleware/auth';
+import { aiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-// Endpoint: POST /ai/summarize (Uses Gemini API to summarize transcripts into { summary, keyPoints, importantConcepts })
-const handleSummarize = async (req: Request, res: Response) => {
-  try {
-    const transcriptText = req.body?.transcript || req.body?.text || (typeof req.body === 'string' ? req.body : '');
-    
-    if (!transcriptText || String(transcriptText).trim() === '') {
-      return res.status(400).json({
-        error: 'Bad Request',
-        message: 'A non-empty "transcript" string field is required in request body.',
-      });
-    }
+// Protect AI routes with JWT Auth and AI Rate Limiter (10 req / 1 min)
+router.use(requireAuth);
+router.use(aiLimiter);
 
-    const result = await summarizeGemini(transcriptText);
-    return res.json(result);
-  } catch (error: any) {
-    console.error('[POST /ai/summarize Error]:', error);
-    if (error instanceof GeminiApiError) {
-      return res.status(500).json({ error: error.name, message: error.message });
-    }
-    return res.status(500).json({ error: 'Internal Error', message: error.message || 'An error occurred while summarizing.' });
-  }
-};
+// AI Video Summarizer endpoint
+router.post('/videos/:id/summarize', AIController.summarizeVideo);
 
-const handleChat = (req: Request, res: Response) => {
-  const { message, context } = req.body || {};
-  res.json({
-    success: true,
-    data: {
-      question: message || 'Hello AI',
-      context: context || null,
-      reply: message
-        ? `Mock AI Chat response to: "${message}". How can I help you further?`
-        : 'Hello! I am your AI assistant (Mock response).',
-      confidenceScore: 0.98,
-      suggestedFollowUps: [
-        'Can you summarize the key concepts?',
-        'Generate a quiz on this topic',
-      ],
-    },
-  });
-};
+// RAG Doubt Assistant endpoint
+router.post('/videos/:id/doubt', AIController.askDoubt);
 
-const handleQuiz = (req: Request, res: Response) => {
-  const { topic = 'General Knowledge', numQuestions = 2 } = req.body || {};
-  res.json({
-    success: true,
-    data: {
-      quizTitle: `Quiz: ${topic}`,
-      difficulty: 'medium',
-      totalQuestions: numQuestions,
-      questions: [
-        {
-          id: 'q1',
-          question: `Sample question 1 about ${topic}?`,
-          options: [
-            'Option A (Incorrect)',
-            'Option B (Correct Answer)',
-            'Option C (Incorrect)',
-            'Option D (Incorrect)',
-          ],
-          correctOptionIndex: 1,
-          explanation: 'Option B is the correct choice according to the mock dataset.',
-        },
-        {
-          id: 'q2',
-          question: 'What is the primary role of an Express Router in Node.js?',
-          options: [
-            'Managing database transactions',
-            'Grouping route handlers for modular application structure',
-            'Compiling TypeScript code to WebAssembly',
-            'Handling CSS layout styling',
-          ],
-          correctOptionIndex: 1,
-          explanation: 'Express Router creates modular, mountable route handlers.',
-        },
-      ],
-    },
-  });
-};
-
-const handleFlashcards = (req: Request, res: Response) => {
-  const { topic = 'Software Architecture', count = 2 } = req.body || {};
-  res.json({
-    success: true,
-    data: {
-      deckTitle: `Flashcards: ${topic}`,
-      totalCards: count,
-      flashcards: [
-        {
-          id: 'fc-1',
-          front: 'What is an Express Router?',
-          back: 'A mini Express application capable only of performing middleware and routing functions.',
-        },
-        {
-          id: 'fc-2',
-          front: 'Why use mock JSON in backend development?',
-          back: 'It unblocks frontend UI construction before live API integrations are connected.',
-        },
-      ],
-    },
-  });
-};
-
-// Standalone AI endpoints
-router.post(['/ai/summarize', '/summarize'], handleSummarize);
-router.post(['/ai/chat', '/chat'], handleChat);
-router.post(['/ai/quiz', '/quiz'], handleQuiz);
-router.post(['/ai/flashcards', '/flashcards'], handleFlashcards);
-
-// Protected video & AI controller endpoints
-router.post('/videos/:id/summarize', requireAuth, AIController.summarizeVideo);
-router.post('/videos/:id/doubt', requireAuth, AIController.askDoubt);
-router.post('/videos', requireAuth, AIController.createAndProcessVideo);
-router.get('/videos/:id', requireAuth, AIController.getVideoDetails);
+// Video management and processing endpoints
+router.post('/videos', AIController.createAndProcessVideo);
+router.get('/videos/:id', AIController.getVideoDetails);
 
 export default router;

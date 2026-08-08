@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
@@ -18,7 +18,11 @@ import interviewRoutes from './routes/interview.routes';
 import livekitRoutes from './routes/livekit.routes';
 import searchRoutes from './routes/search.routes';
 import flashcardRoutes from './routes/flashcard.routes';
+import analyticsRoutes from './routes/analytics.routes';
+import certificateRoutes from './routes/certificate.routes';
 
+import { generalLimiter } from './middleware/rateLimiter';
+import { globalErrorHandler } from './middleware/error';
 import { initStudyRoomGateway } from './gateways/studyRoom.gateway';
 import './workers/videoWorker';
 
@@ -48,6 +52,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Apply General Rate Limiter to all API routes (100 req / 1 min)
+app.use('/api', generalLimiter);
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/workspaces', workspaceRoutes);
@@ -59,6 +66,8 @@ app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/study-rooms', livekitRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/certificates', certificateRoutes);
 
 // Health Check Endpoint
 app.get('/health', (_req: Request, res: Response) => {
@@ -71,16 +80,8 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// Global Error Handling Middleware
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('[Global Error Handler]:', err);
-  const statusCode = err.statusCode || err.status || 500;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-    stack: env.NODE_ENV === 'development' ? err.stack : undefined,
-  });
-});
+// Global Production Error Handling Middleware (Sentry Integration)
+app.use(globalErrorHandler);
 
 // Start Server
 const startServer = async () => {
