@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { AIController } from '../controllers/ai.controller';
 import { requireAuth } from '../middleware/auth';
+import { aiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-// Protect AI routes with JWT Auth
+// Protect AI routes with JWT Auth and AI Rate Limiter (10 req / 1 min)
 router.use(requireAuth);
+router.use(aiLimiter);
 
 // AI Video Summarizer endpoint
 router.post('/videos/:id/summarize', AIController.summarizeVideo);

@@ -68,7 +68,7 @@ export const processVideoJob = async (job: Job<VideoProcessingJobData>) => {
         response.data.pipe(writer);
 
         await new Promise((resolve, reject) => {
-          writer.on('finish', resolve);
+          writer.on('finish', () => resolve(true));
           writer.on('error', reject);
         });
 
