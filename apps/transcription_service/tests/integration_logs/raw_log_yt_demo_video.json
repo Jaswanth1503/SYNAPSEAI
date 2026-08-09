@@ -1,0 +1,762 @@
+{
+  "video_id": "yt_demo_video",
+  "raw_transcript": {
+    "video_id": "yt_dQw4w9WgXcQ",
+    "duration_sec": 211.32,
+    "segments": [
+      {
+        "start": 1.36,
+        "end": 3.04,
+        "speaker": "SPEAKER_00",
+        "text": "[\u266a\u266a\u266a]"
+      },
+      {
+        "start": 18.64,
+        "end": 21.88,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a We're no strangers to love \u266a"
+      },
+      {
+        "start": 22.64,
+        "end": 26.96,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a You know the rules and so do I \u266a"
+      },
+      {
+        "start": 27.04,
+        "end": 31.04,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a A full commitment's what I'm thinking of \u266a"
+      },
+      {
+        "start": 31.12,
+        "end": 35.08,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a You wouldn't get this from any other guy \u266a"
+      },
+      {
+        "start": 35.16,
+        "end": 39.52,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a I just wanna tell you how I'm feeling \u266a"
+      },
+      {
+        "start": 40.52,
+        "end": 42.92,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Gotta make you understand \u266a"
+      },
+      {
+        "start": 43.0,
+        "end": 45.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 45.2,
+        "end": 47.08,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 47.32,
+        "end": 51.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 51.48,
+        "end": 53.48,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 53.6,
+        "end": 55.52,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 55.72,
+        "end": 59.36,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      },
+      {
+        "start": 60.8,
+        "end": 64.8,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a We've known each other for so long \u266a"
+      },
+      {
+        "start": 64.88,
+        "end": 69.04,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Your heart's been aching but you're too shy to say it \u266a"
+      },
+      {
+        "start": 69.12,
+        "end": 72.96,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Inside we both know what's been going \u266a"
+      },
+      {
+        "start": 73.36,
+        "end": 77.2,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a We know the game and we're gonna play it \u266a"
+      },
+      {
+        "start": 77.4,
+        "end": 82.04,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a And if you ask me how I'm feeling \u266a"
+      },
+      {
+        "start": 82.4,
+        "end": 85.24,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Don't tell me you're too blind to see \u266a"
+      },
+      {
+        "start": 85.32,
+        "end": 87.28,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 87.36,
+        "end": 89.32,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 89.44,
+        "end": 93.72,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 93.8,
+        "end": 95.6,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 95.76,
+        "end": 98.0,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 98.08,
+        "end": 102.04,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      },
+      {
+        "start": 102.2,
+        "end": 104.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 104.28,
+        "end": 106.36,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 106.48,
+        "end": 110.08,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 110.76,
+        "end": 112.72,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 112.8,
+        "end": 114.68,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 114.96,
+        "end": 118.76,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      },
+      {
+        "start": 119.84,
+        "end": 122.96,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a (Ooh, give you up) \u266a"
+      },
+      {
+        "start": 123.72,
+        "end": 127.36,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a (Ooh, give you up) \u266a"
+      },
+      {
+        "start": 128.48,
+        "end": 130.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give, never gonna give \u266a"
+      },
+      {
+        "start": 130.24,
+        "end": 131.56,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a (Give you up) \u266a"
+      },
+      {
+        "start": 132.48,
+        "end": 134.24,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give, never gonna give \u266a"
+      },
+      {
+        "start": 134.36,
+        "end": 135.92,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a (Give you up) \u266a"
+      },
+      {
+        "start": 136.76,
+        "end": 141.08,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a We've known each other for so long \u266a"
+      },
+      {
+        "start": 141.2,
+        "end": 145.2,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Your heart's been aching but you're too shy to say it \u266a"
+      },
+      {
+        "start": 145.28,
+        "end": 149.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Inside we both know what's been going \u266a"
+      },
+      {
+        "start": 149.52,
+        "end": 153.2,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a We know the game and we're gonna play it \u266a"
+      },
+      {
+        "start": 153.36,
+        "end": 158.04,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a I just wanna tell you how I'm feeling \u266a"
+      },
+      {
+        "start": 158.64,
+        "end": 161.32,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Gotta make you understand \u266a"
+      },
+      {
+        "start": 161.4,
+        "end": 163.36,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 163.44,
+        "end": 165.64,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 165.72,
+        "end": 169.72,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 169.8,
+        "end": 171.64,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 171.8,
+        "end": 173.96,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 174.04,
+        "end": 177.6,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      },
+      {
+        "start": 178.2,
+        "end": 180.24,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 180.32,
+        "end": 182.44,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 182.52,
+        "end": 186.64,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 186.72,
+        "end": 188.72,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 188.84,
+        "end": 190.72,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 190.84,
+        "end": 195.2,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      },
+      {
+        "start": 195.28,
+        "end": 197.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna give you up \u266a"
+      },
+      {
+        "start": 197.2,
+        "end": 199.24,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna let you down \u266a"
+      },
+      {
+        "start": 199.4,
+        "end": 203.12,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna run around and desert you \u266a"
+      },
+      {
+        "start": 203.36,
+        "end": 205.6,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna make you cry \u266a"
+      },
+      {
+        "start": 205.68,
+        "end": 207.84,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna say goodbye \u266a"
+      },
+      {
+        "start": 207.92,
+        "end": 211.32,
+        "speaker": "SPEAKER_00",
+        "text": "\u266a Never gonna tell a lie and hurt you \u266a"
+      }
+    ]
+  },
+  "clean_transcript": {
+    "video_id": "yt_dQw4w9WgXcQ",
+    "duration_sec": 211.32,
+    "segments": [
+      {
+        "speaker": "[Speaker 00]",
+        "start": 1.36,
+        "end": 211.32,
+        "text": "[\u266a\u266a\u266a]. \u266a We're no strangers to love \u266a. \u266a the rules and so do I \u266a. \u266a A full commitment's what I'm thinking of \u266a. \u266a You wouldn't get this from any other guy \u266a. \u266a I just wanna tell you how I'm feeling \u266a. \u266a Gotta make you understand \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a We've known each other for so long \u266a. \u266a Your heart's been aching but you're too shy to say it \u266a. \u266a Inside we both know what's been going \u266a. \u266a We know the game and we're gonna play it \u266a. \u266a And if you ask me how I'm feeling \u266a. \u266a Don't tell me you're too blind to see \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a (Ooh, give you up) \u266a. \u266a (Ooh, give you up) \u266a. \u266a Never gonna give, never gonna give \u266a. \u266a (Give you up) \u266a. \u266a Never gonna give, never gonna give \u266a. \u266a (Give you up) \u266a. \u266a We've known each other for so long \u266a. \u266a Your heart's been aching but you're too shy to say it \u266a. \u266a Inside we both know what's been going \u266a. \u266a We know the game and we're gonna play it \u266a. \u266a I just wanna tell you how I'm feeling \u266a. \u266a Gotta make you understand \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a."
+      }
+    ],
+    "full_text": "[Speaker 00]: [\u266a\u266a\u266a]. \u266a We're no strangers to love \u266a. \u266a the rules and so do I \u266a. \u266a A full commitment's what I'm thinking of \u266a. \u266a You wouldn't get this from any other guy \u266a. \u266a I just wanna tell you how I'm feeling \u266a. \u266a Gotta make you understand \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a We've known each other for so long \u266a. \u266a Your heart's been aching but you're too shy to say it \u266a. \u266a Inside we both know what's been going \u266a. \u266a We know the game and we're gonna play it \u266a. \u266a And if you ask me how I'm feeling \u266a. \u266a Don't tell me you're too blind to see \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a (Ooh, give you up) \u266a. \u266a (Ooh, give you up) \u266a. \u266a Never gonna give, never gonna give \u266a. \u266a (Give you up) \u266a. \u266a Never gonna give, never gonna give \u266a. \u266a (Give you up) \u266a. \u266a We've known each other for so long \u266a. \u266a Your heart's been aching but you're too shy to say it \u266a. \u266a Inside we both know what's been going \u266a. \u266a We know the game and we're gonna play it \u266a. \u266a I just wanna tell you how I'm feeling \u266a. \u266a Gotta make you understand \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a. \u266a Never gonna give you up \u266a. \u266a Never gonna let you down \u266a. \u266a Never gonna run around and desert you \u266a. \u266a Never gonna make you cry \u266a. \u266a Never gonna say goodbye \u266a. \u266a Never gonna tell a lie and hurt you \u266a."
+  },
+  "content_artifacts": {
+    "video_id": "yt_dQw4w9WgXcQ",
+    "content_hash": "5f33f44e114e3207dc7e490941617a854827df908723d52bc4bfcb577413165c",
+    "summary": {
+      "tldr": "Rick Astley expresses unwavering devotion and deep commitment to a romantic partner, pledging never to betray, abandon, or hurt them.",
+      "key_points": [
+        "Expresses a desire for a full, unique commitment in a romantic relationship.",
+        "Pledges complete loyalty, promising never to give up, let down, or desert the partner.",
+        "Acknowledges a long-standing bond and mutual feelings that have been unspoken due to shyness.",
+        "Reassures the partner of honesty and emotional reliability to protect them from hurt."
+      ],
+      "sections": [
+        {
+          "title": "Introduction and Declaration of Commitment",
+          "summary": "The speaker establishes a shared understanding of love and declares a desire for a complete and unique commitment.",
+          "start_time": 0.0
+        },
+        {
+          "title": "The Core Promise (Chorus)",
+          "summary": "The speaker vows never to give up, let down, desert, lie to, or hurt the partner.",
+          "start_time": 18.5
+        },
+        {
+          "title": "Shared History and Unspoken Feelings",
+          "summary": "Reflects on a long-standing relationship where both parties share unspoken romantic feelings.",
+          "start_time": 43.0
+        },
+        {
+          "title": "Vocal Bridge and Reiteration",
+          "summary": "Emphasizes the core pledge through vocal improvisations and repeated choruses confirming enduring loyalty.",
+          "start_time": 78.0
+        }
+      ]
+    },
+    "notes": {
+      "sections": [
+        {
+          "heading": "Introduction & Commitment Intentions",
+          "bullets": [
+            "Establishment of mutual familiarity with love and relationship rules.",
+            "Declaration of full commitment and unique dedication not found elsewhere.",
+            "Emphasis on honest expression of personal feelings and mutual understanding."
+          ],
+          "start_time": 0.0
+        },
+        {
+          "heading": "Core Guarantees of Loyalty",
+          "bullets": [
+            "Pledge of continuous support: Refusal to give up, let down, or desert the partner.",
+            "Pledge of emotional safety: Absolute avoidance of causing tears, saying goodbye, or telling lies."
+          ],
+          "start_time": 18.5
+        },
+        {
+          "heading": "Shared History and Unspoken Dynamics",
+          "bullets": [
+            "Acknowledgment of long-standing personal connection and history.",
+            "Recognition of unspoken feelings and hesitation to express emotions.",
+            "Mutual awareness of relationship dynamics and joint commitment to participate."
+          ],
+          "start_time": 42.0
+        }
+      ]
+    },
+    "flashcards": {
+      "cards": [
+        {
+          "question": "According to the transcript, what are the speaker and listener no strangers to?",
+          "answer": "Love",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What level of commitment is the speaker thinking of?",
+          "answer": "A full commitment",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What does the speaker state you wouldn't get from any other guy?",
+          "answer": "A full commitment",
+          "difficulty": "medium"
+        },
+        {
+          "question": "What does the speaker want to tell the listener?",
+          "answer": "How they are feeling",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What does the speaker say they gotta make the listener do?",
+          "answer": "Understand",
+          "difficulty": "easy"
+        },
+        {
+          "question": "According to the chorus, what is the speaker never gonna give up?",
+          "answer": "You",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What does the speaker promise never to do involving 'letting'?",
+          "answer": "Never gonna let you down",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What does the speaker promise never to do involving running around?",
+          "answer": "Run around and desert you",
+          "difficulty": "medium"
+        },
+        {
+          "question": "What action causing tears does the speaker promise never to do?",
+          "answer": "Make you cry",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What departure phrase does the speaker promise never to say?",
+          "answer": "Goodbye",
+          "difficulty": "easy"
+        },
+        {
+          "question": "What deceptive action does the speaker promise never to do?",
+          "answer": "Tell a lie and hurt you",
+          "difficulty": "medium"
+        },
+        {
+          "question": "How long have the speaker and listener known each other?",
+          "answer": "For so long",
+          "difficulty": "easy"
+        },
+        {
+          "question": "Why has the listener's heart been aching according to the text?",
+          "answer": "Because they are too shy to say it",
+          "difficulty": "medium"
+        },
+        {
+          "question": "What do both parties know inside?",
+          "answer": "What's been going on",
+          "difficulty": "medium"
+        },
+        {
+          "question": "What do the speaker and listener know and intend to play?",
+          "answer": "The game",
+          "difficulty": "medium"
+        },
+        {
+          "question": "If asked how the speaker is feeling, what should the listener not say?",
+          "answer": "Don't tell me you're too blind to see",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    "quiz": {
+      "questions": [
+        {
+          "question": "According to the transcript, what type of commitment is the singer thinking of?",
+          "options": [
+            "A casual commitment",
+            "A full commitment",
+            "A temporary commitment",
+            "A conditional commitment"
+          ],
+          "correct_index": 1,
+          "explanation": "The lyrics explicitly state: 'A full commitment's what I'm thinking of'."
+        },
+        {
+          "question": "Why has the listener's heart been aching, according to the lyrics?",
+          "options": [
+            "Because they don't know the rules",
+            "Because they are too blind to see",
+            "Because they are too shy to say it",
+            "Because they want to say goodbye"
+          ],
+          "correct_index": 2,
+          "explanation": "The transcript mentions: 'Your heart's been aching but you're too shy to say it'."
+        },
+        {
+          "question": "Which of the following is NOT one of the 'never gonna' promises made in the song?",
+          "options": [
+            "Never gonna give you up",
+            "Never gonna play the game",
+            "Never gonna make you cry",
+            "Never gonna say goodbye"
+          ],
+          "correct_index": 1,
+          "explanation": "The lyrics state 'We know the game and we're gonna play it', so playing the game is something they will do, not something they promise never to do."
+        },
+        {
+          "question": "What does the singer claim you wouldn't get from 'any other guy'?",
+          "options": [
+            "A full commitment",
+            "A lie",
+            "A reason to cry",
+            "An explanation of the rules"
+          ],
+          "correct_index": 0,
+          "explanation": "After mentioning 'A full commitment's what I'm thinking of', the next line states: 'You wouldn't get this from any other guy'."
+        },
+        {
+          "question": "According to the lyrics, what action is paired with 'and hurt you'?",
+          "options": [
+            "Tell a lie",
+            "Run around",
+            "Say goodbye",
+            "Make you cry"
+          ],
+          "correct_index": 0,
+          "explanation": "The lyric explicitly pairs these actions in the line: 'Never gonna tell a lie and hurt you'."
+        },
+        {
+          "question": "What does the singer ask the listener not to say if asked how the singer is feeling?",
+          "options": [
+            "Don't tell me you're too shy to speak",
+            "Don't tell me you're too blind to see",
+            "Don't tell me you don't know the rules",
+            "Don't tell me you're going to desert me"
+          ],
+          "correct_index": 1,
+          "explanation": "The transcript states: 'And if you ask me how I'm feeling / Don't tell me you're too blind to see'."
+        }
+      ]
+    },
+    "mind_map": {
+      "root": "Never Gonna Give You Up",
+      "children": [
+        {
+          "label": "Core Commitments",
+          "children": [
+            {
+              "label": "Loyalty & Support",
+              "children": [
+                {
+                  "label": "Never gonna give you up",
+                  "children": []
+                },
+                {
+                  "label": "Never gonna let you down",
+                  "children": []
+                },
+                {
+                  "label": "Never gonna run around and desert you",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "label": "Emotional Safety & Honesty",
+              "children": [
+                {
+                  "label": "Never gonna make you cry",
+                  "children": []
+                },
+                {
+                  "label": "Never gonna say goodbye",
+                  "children": []
+                },
+                {
+                  "label": "Never gonna tell a lie and hurt you",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Relationship Dynamics",
+          "children": [
+            {
+              "label": "Shared History & Game",
+              "children": [
+                {
+                  "label": "Known each other for so long",
+                  "children": []
+                },
+                {
+                  "label": "Know the game and gonna play it",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "label": "Unspoken Feelings",
+              "children": [
+                {
+                  "label": "Heart's been aching",
+                  "children": []
+                },
+                {
+                  "label": "Too shy to say it",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Intentions & Communication",
+          "children": [
+            {
+              "label": "Desire for Commitment",
+              "children": [
+                {
+                  "label": "Thinking of a full commitment",
+                  "children": []
+                },
+                {
+                  "label": "Unique devotion from no other guy",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "label": "Need for Openness",
+              "children": [
+                {
+                  "label": "Wanna tell you how I'm feeling",
+                  "children": []
+                },
+                {
+                  "label": "Gotta make you understand",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "roadmap": {
+      "steps": [
+        {
+          "order": 1,
+          "title": "Understanding the Foundational Rules of Relationships",
+          "description": "Establish a basic understanding of love, mutual expectations, and shared relational rules as outlined in the initial engagement.",
+          "prerequisite_of": [
+            2
+          ]
+        },
+        {
+          "order": 2,
+          "title": "Formulating Uncompromising Commitment",
+          "description": "Define the boundaries of a full commitment that sets the partnership apart from standard interactions.",
+          "prerequisite_of": [
+            3
+          ]
+        },
+        {
+          "order": 3,
+          "title": "Articulating Feelings and Intentions",
+          "description": "Develop skills for clear communication, ensuring your partner fully understands your emotional state and long-term intentions.",
+          "prerequisite_of": [
+            4
+          ]
+        },
+        {
+          "order": 4,
+          "title": "Upholding Core Support Promises",
+          "description": "Put into practice the core pledges: avoiding abandonment, disappointment, desertion, emotional distress, premature farewells, and deception.",
+          "prerequisite_of": [
+            5
+          ]
+        },
+        {
+          "order": 5,
+          "title": "Navigating Mutual Intuition and Long-Term Dynamics",
+          "description": "Overcome shyness and relational hesitation by acknowledging shared unspoken feelings and actively participating in ongoing relationship dynamics.",
+          "prerequisite_of": []
+        }
+      ]
+    },
+    "_meta": {
+      "provider": "gemini",
+      "total_tokens": {
+        "prompt_tokens": 3974,
+        "completion_tokens": 2528
+      }
+    }
+  }
+}
