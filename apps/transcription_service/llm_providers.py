@@ -256,6 +256,13 @@ class MockProvider(BaseLLMProvider):
                     }
                 ]
             }
+        elif "interviewquestion" in lower or "interviewer" in lower or "target role:" in lower or "candidate history" in lower:
+            mock_data = {
+                "question": "Tell me about a time you resolved a major production incident under tight deadline pressures.",
+                "type": "behavioral",
+                "targets": "Incident Response & Communication",
+                "difficulty": "medium"
+            }
         elif "quiz" in lower or "questions" in lower:
             mock_data = {
                 "questions": [
@@ -292,6 +299,47 @@ class MockProvider(BaseLLMProvider):
                     }
                 ]
             }
+        elif "projectideasbatch" in lower or "project ideas" in lower or "learner's existing skills" in lower or "weak topics to reinforce" in lower:
+            mock_data = {
+                "ideas": [
+                    {
+                        "title": "Financial Portfolio API & Analytics Service",
+                        "description": "Build a REST API to fetch stock price data, compute portfolio returns using pandas, and authenticate users.",
+                        "skills_reinforced": ["APIs", "authentication"],
+                        "difficulty": "intermediate",
+                        "estimated_time": "8-10 hours",
+                        "key_features": ["JWT authentication", "Stock price endpoint", "Pandas analytics"],
+                        "stretch_goals": ["OAuth2 integration", "Cache analytics in Redis"]
+                    },
+                    {
+                        "title": "Automated Budget Tracking API",
+                        "description": "Create a backend system to ingest expense CSVs into pandas DataFrames and serve summary endpoints.",
+                        "skills_reinforced": ["APIs", "authentication"],
+                        "difficulty": "intermediate",
+                        "estimated_time": "6-8 hours",
+                        "key_features": ["File upload endpoint", "Expense analytics", "Role-based access"],
+                        "stretch_goals": ["Export PDF reports"]
+                    }
+                ]
+            }
+        elif "projectroadmap" in lower or "generate sequential build roadmap" in lower:
+            mock_data = {
+                "title": "Financial Portfolio API & Analytics Service",
+                "steps": [
+                    {
+                        "order": 1,
+                        "title": "Set up Database & Authentication Models",
+                        "description": "Implement user schema and JWT authentication middleware.",
+                        "concepts_needed": ["Python", "JWT", "Authentication"]
+                    },
+                    {
+                        "order": 2,
+                        "title": "Build Pandas Financial Analytics Engine",
+                        "description": "Write pandas routines to compute rolling returns and portfolio volatility.",
+                        "concepts_needed": ["pandas", "DataFrames", "APIs"]
+                    }
+                ]
+            }
         elif "roadmap" in lower or "steps" in lower:
             mock_data = {
                 "steps": [
@@ -308,12 +356,6 @@ class MockProvider(BaseLLMProvider):
                         "prerequisite_of": []
                     }
                 ]
-            }
-        elif "visual" in lower or "classify" in lower or "needs_visual" in lower:
-            mock_data = {
-                "needs_visual": True,
-                "type": "flowchart",
-                "concept": "Algorithm Process Flowchart"
             }
         elif "topics" in lower or "topic" in lower or "extract" in lower:
             mock_data = {
@@ -337,6 +379,115 @@ class MockProvider(BaseLLMProvider):
                         }
                     ]
                 }
+        elif "codeexplanation" in lower or "explain" in lower or "beginner can follow" in lower:
+            mock_data = {
+                "summary": "This code defines a function that performs the requested operation.",
+                "line_by_line": [
+                    {"lines": "Line 1", "explanation": "Defines function signature and parameters."},
+                    {"lines": "Line 2", "explanation": "Executes core logic and returns result."}
+                ],
+                "concepts_used": ["Functions", "Variables", "Control Flow"]
+            }
+        elif "debugresult" in lower or "debug" in lower or "error_message" in lower or "stated intent" in lower:
+            mock_data = {
+                "likely_issues": [
+                    {
+                        "description": "Index out of range / boundary condition issue.",
+                        "line_reference": "high = len(arr)",
+                        "suggested_fix": "Change high = len(arr) to high = len(arr) - 1."
+                    }
+                ],
+                "corrected_code": "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1"
+            }
+        elif "testcasesresult" in lower or "test cases" in lower or "target function signature" in lower:
+            mock_data = {
+                "test_cases": [
+                    {
+                        "input": {"s": "racecar"},
+                        "expected_output": True,
+                        "case_type": "typical",
+                        "reasoning": "Standard palindrome string."
+                    },
+                    {
+                        "input": {"s": ""},
+                        "expected_output": True,
+                        "case_type": "edge",
+                        "reasoning": "Empty string boundary condition."
+                    }
+                ]
+            }
+        elif "complexityanalysis" in lower or "complexity" in lower or "big-o" in lower or "space complexity" in lower:
+            mock_data = {
+                "time_complexity": "O(n)",
+                "space_complexity": "O(1)",
+                "reasoning": "Single loop iterating through n elements.",
+                "potential_optimizations": ["Early return if target found."]
+            }
+        elif "interviewquestion" in lower or "interviewer" in lower or "target role:" in lower:
+            mock_data = {
+                "question": "Tell me about a time you resolved a major production incident under tight deadline pressures.",
+                "type": "behavioral",
+                "targets": "Incident Response & Communication",
+                "difficulty": "medium"
+            }
+        elif "answerevaluation" in lower or "evaluator" in lower or "candidate's answer" in lower:
+            if "vague" in lower or "i fixed it" in lower or "some bugs" in lower:
+                mock_data = {
+                    "score": 45.0,
+                    "strengths": ["Acknowledged the question topic."],
+                    "weaknesses": ["Lack of specific metrics or concrete details.", "Missing STAR method structure."],
+                    "missing_points": ["Quantifiable impact", "Specific actions taken"],
+                    "improved_answer_example": "When production latency spiked to 5s, I isolated the unindexed query and added a composite B-tree index, dropping p99 latency to 45ms."
+                }
+            else:
+                mock_data = {
+                    "score": 92.0,
+                    "strengths": ["Excellent STAR structure", "Clear technical metrics"],
+                    "weaknesses": ["Minor detail missing on load balancer config."],
+                    "missing_points": ["Rollback strategy details"],
+                    "improved_answer_example": "In addition to adding the composite index, mention automated health checks."
+                }
+        elif "projectideasbatch" in lower or "project ideas" in lower or "learner's existing skills" in lower:
+            mock_data = {
+                "ideas": [
+                    {
+                        "title": "Financial Portfolio API & Analytics Service",
+                        "description": "Build a REST API to fetch stock price data, compute portfolio returns using pandas, and authenticate users.",
+                        "skills_reinforced": ["APIs", "authentication"],
+                        "difficulty": "intermediate",
+                        "estimated_time": "8-10 hours",
+                        "key_features": ["JWT authentication", "Stock price endpoint", "Pandas analytics"],
+                        "stretch_goals": ["OAuth2 integration", "Cache analytics in Redis"]
+                    },
+                    {
+                        "title": "Automated Budget Tracking API",
+                        "description": "Create a backend system to ingest expense CSVs into pandas DataFrames and serve summary endpoints.",
+                        "skills_reinforced": ["APIs", "authentication"],
+                        "difficulty": "intermediate",
+                        "estimated_time": "6-8 hours",
+                        "key_features": ["File upload endpoint", "Expense analytics", "Role-based access"],
+                        "stretch_goals": ["Export PDF reports"]
+                    }
+                ]
+            }
+        elif "projectroadmap" in lower or "build roadmap" in lower or "sequential build roadmap" in lower:
+            mock_data = {
+                "title": "Financial Portfolio API & Analytics Service",
+                "steps": [
+                    {
+                        "order": 1,
+                        "title": "Set up Database & Authentication Models",
+                        "description": "Implement user schema and JWT authentication middleware.",
+                        "concepts_needed": ["Python", "JWT", "Authentication"]
+                    },
+                    {
+                        "order": 2,
+                        "title": "Build Pandas Financial Analytics Engine",
+                        "description": "Write pandas routines to compute rolling returns and portfolio volatility.",
+                        "concepts_needed": ["pandas", "DataFrames", "APIs"]
+                    }
+                ]
+            }
         else:
             mock_data = {"status": "ok", "message": "Mock generation success"}
 
