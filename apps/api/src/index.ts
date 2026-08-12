@@ -9,6 +9,7 @@ import { env } from './config/env';
 import { connectDB } from './config/db';
 
 import authRoutes from './routes/auth.routes';
+import videoRoutes from './routes/video.routes';
 import workspaceRoutes from './routes/workspace.routes';
 import codeRoutes from './routes/code.routes';
 import aiRoutes from './routes/ai.routes';
@@ -57,6 +58,7 @@ app.use('/api', generalLimiter);
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/videos', videoRoutes);
 app.use('/api/v1/workspaces', workspaceRoutes);
 app.use('/api/v1/code', codeRoutes);
 app.use('/api/v1/ai', aiRoutes);

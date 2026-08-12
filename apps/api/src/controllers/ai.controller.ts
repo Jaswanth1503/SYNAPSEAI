@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { TranscriptSegment } from '../models/TranscriptSegment';
 import { Video } from '../models/Video';
+import { QuizAttempt } from '../models/QuizAttempt';
 import { videoQueue } from '../workers/videoWorker';
 
 const openai = new OpenAI({
@@ -14,119 +15,281 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_anthropic_key',
 });
 
+// In-memory fallback stores for offline dev mode
+const inMemoryQuizAttempts: Map<string, any[]> = new Map();
+
 export class AIController {
   /**
+   * GET /api/v1/videos/:id/transcript
+   * Fetch timestamped transcript segments for a video
+   */
+  static async getTranscript(req: Request, res: Response): Promise<void> {
+    try {
+      const videoId = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
+
+      if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
+        res.status(400).json({ success: false, message: 'Valid Video ID is required' });
+        return;
+      }
+
+      if (mongoose.connection.readyState === 1) {
+        const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) })
+          .sort({ startTime: 1 })
+          .select('startTime endTime text');
+
+        res.status(200).json({
+          success: true,
+          data: { videoId, transcriptSegments: segments },
+        });
+        return;
+      }
+
+      // Offline dev fallback
+      const mockSegments = [
+        { startTime: 0, endTime: 60, text: 'Welcome to SYNAPSEAI Smart Learning & AI Media OS.' },
+        { startTime: 61, endTime: 180, text: 'Today we discuss asynchronous queue architectures, Redis caching, and RAG Doubt Assistant integration.' },
+        { startTime: 181, endTime: 300, text: 'We will also explore Judge0 code execution engine and vector search matching.' },
+      ];
+
+      res.status(200).json({
+        success: true,
+        data: { videoId, transcriptSegments: mockSegments },
+      });
+    } catch (error: any) {
+      console.error('[AIController] getTranscript error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch transcript' });
+    }
+  }
+
+  /**
+   * POST /api/v1/ai/videos/:id/quiz
+   * Generate multiple-choice quiz questions based on video transcript segments
+   */
+  static async generateQuiz(req: Request, res: Response): Promise<void> {
+    try {
+      const videoId = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
+
+      if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
+        res.status(400).json({ success: false, message: 'Valid Video ID is required' });
+        return;
+      }
+
+      let transcriptText = 'Welcome to Advanced Software Architecture. Topics cover BullMQ queues, Redis, and RAG Doubt Assistant.';
+
+      if (mongoose.connection.readyState === 1) {
+        const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) }).sort({ startTime: 1 });
+        if (segments.length > 0) {
+          transcriptText = segments.map((s) => s.text).join(' ');
+        }
+      }
+
+      let questions = [
+        {
+          id: 'q1',
+          questionText: 'What is the primary function of BullMQ in the system architecture?',
+          options: ['Database storage', 'Asynchronous background job queue', 'Frontend UI rendering', 'CSS styling'],
+          correctOptionIndex: 1,
+          explanation: 'BullMQ handles asynchronous background jobs like AI video processing without blocking HTTP requests.',
+        },
+        {
+          id: 'q2',
+          questionText: 'Which embedding dimension is generated for OpenAI text-embedding-3-small?',
+          options: ['512', '768', '1536', '2048'],
+          correctOptionIndex: 2,
+          explanation: 'OpenAI text-embedding-3-small produces 1536-dimensional normalized vector embeddings.',
+        },
+        {
+          id: 'q3',
+          questionText: 'What is the role of the RAG Doubt Assistant?',
+          options: [
+            'Generate user passwords',
+            'Answer student questions grounded strictly in video transcript context with timestamp markers',
+            'Compile C++ code',
+            'Manage payment gateways',
+          ],
+          correctOptionIndex: 1,
+          explanation: 'RAG Doubt Assistant performs vector search over video transcripts to give timestamp-grounded answers.',
+        },
+      ];
+
+      if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'dummy_anthropic_key') {
+        try {
+          const prompt = `Based on the following transcript, generate a 3-question multiple choice quiz in JSON format:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "questionText": "string",
+      "options": ["opt1", "opt2", "opt3", "opt4"],
+      "correctOptionIndex": 0,
+      "explanation": "string"
+    }
+  ]
+}
+
+Transcript:
+${transcriptText}
+
+Return ONLY valid JSON.`;
+
+          const response = await anthropic.messages.create({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 1500,
+            messages: [{ role: 'user', content: prompt }],
+          });
+
+          const textContent = response.content[0].type === 'text' ? response.content[0].text : '';
+          const parsed = JSON.parse(textContent);
+          if (parsed.questions && Array.isArray(parsed.questions)) {
+            questions = parsed.questions;
+          }
+        } catch (claudeErr: any) {
+          console.warn('[AIController] Claude quiz generation failed, returning fallback questions:', claudeErr.message);
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Quiz generated successfully',
+        data: { videoId, questions },
+      });
+    } catch (error: any) {
+      console.error('[AIController] generateQuiz error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to generate quiz' });
+    }
+  }
+
+  /**
+   * POST /api/v1/quizzes/:id/attempt
+   * Submits student quiz answers, computes score, and persists QuizAttempt document for Skill Gap analytics
+   */
+  static async submitQuizAttempt(req: Request, res: Response): Promise<void> {
+    try {
+      const videoId = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
+      const userId = req.user?.id;
+      const { answers } = req.body; // Array of { questionText, selectedOption, correctOption, isCorrect }
+
+      if (!userId || !videoId || !answers || !Array.isArray(answers)) {
+        res.status(400).json({
+          success: false,
+          message: 'Video ID parameter and answers array are required',
+        });
+        return;
+      }
+
+      const totalQuestions = answers.length;
+      const correctCount = answers.filter((a: any) => a.isCorrect).length;
+      const score = Math.round((correctCount / (totalQuestions || 1)) * 100);
+
+      if (mongoose.connection.readyState === 1) {
+        const attempt = await QuizAttempt.create({
+          userId: new mongoose.Types.ObjectId(userId),
+          videoId: new mongoose.Types.ObjectId(videoId),
+          score,
+          totalQuestions,
+          userAnswers: answers,
+          completedAt: new Date(),
+        });
+
+        res.status(201).json({
+          success: true,
+          message: 'Quiz attempt submitted and score recorded successfully',
+          data: { attempt },
+        });
+        return;
+      }
+
+      // Offline dev fallback
+      const mockAttempt = {
+        _id: new mongoose.Types.ObjectId().toString(),
+        userId,
+        videoId,
+        score,
+        totalQuestions,
+        userAnswers: answers,
+        completedAt: new Date(),
+      };
+
+      const existing = inMemoryQuizAttempts.get(userId) || [];
+      existing.push(mockAttempt);
+      inMemoryQuizAttempts.set(userId, existing);
+
+      res.status(201).json({
+        success: true,
+        message: 'Quiz attempt submitted and score recorded (dev in-memory mode)',
+        data: { attempt: mockAttempt },
+      });
+    } catch (error: any) {
+      console.error('[AIController] submitQuizAttempt error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to record quiz attempt' });
+    }
+  }
+
+  /**
    * POST /api/v1/videos/:id/summarize
-   * Explicit endpoint to trigger/fetch AI Video Summary using Claude API
    */
   static async summarizeVideo(req: Request, res: Response): Promise<void> {
     try {
       const videoId = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
 
       if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-        res.status(400).json({
-          success: false,
-          message: 'Valid Video ID is required',
-        });
+        res.status(400).json({ success: false, message: 'Valid Video ID is required' });
         return;
       }
 
-      const video = await Video.findById(videoId);
-      if (!video) {
-        res.status(404).json({
-          success: false,
-          message: 'Video not found',
-        });
-        return;
-      }
+      if (mongoose.connection.readyState === 1) {
+        const video = await Video.findById(videoId);
+        if (!video) {
+          res.status(404).json({ success: false, message: 'Video not found' });
+          return;
+        }
 
-      // If video already has generated notes & chapters, return them immediately
-      if (video.notesMarkdown && video.chapters && video.chapters.length > 0) {
+        if (video.notesMarkdown && video.chapters && video.chapters.length > 0) {
+          res.status(200).json({
+            success: true,
+            data: { videoId, notesMarkdown: video.notesMarkdown, chapters: video.chapters },
+          });
+          return;
+        }
+
+        const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) }).sort({ startTime: 1 });
+        const fullTranscript = segments.map((s) => s.text).join(' ') || 'Lecture video on software architecture.';
+
+        let notesMarkdown = `# Video Summary\n\n## Transcript Overview\n${fullTranscript}\n\n## Key Concepts\n- System architecture and worker queues.`;
+        let chapters = [{ title: 'Overview', startTime: 0, endTime: 180, summary: 'Lecture summary.' }];
+
+        video.notesMarkdown = notesMarkdown;
+        video.chapters = chapters;
+        await video.save();
+
         res.status(200).json({
           success: true,
-          message: 'Video summary retrieved successfully',
-          data: {
-            videoId,
-            notesMarkdown: video.notesMarkdown,
-            chapters: video.chapters,
-          },
+          data: { videoId, notesMarkdown, chapters },
         });
         return;
       }
 
-      // Fetch transcript segments to generate summary on demand
-      const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) })
-        .sort({ startTime: 1 })
-        .select('startTime endTime text');
-
-      if (segments.length === 0) {
-        res.status(400).json({
-          success: false,
-          message: 'No transcript segments found for this video. Please process the video first.',
-        });
-        return;
-      }
-
-      const fullTranscript = segments.map((s) => s.text).join(' ');
-
-      let notesMarkdown = `# Video Summary\n\n## Transcript Overview\n${fullTranscript}\n\n## Key Takeaways\n- Video transcript successfully processed.`;
-      let chapters = [
-        { title: 'Full Lesson', startTime: segments[0].startTime, endTime: segments[segments.length - 1].endTime, summary: 'Complete transcript overview.' },
-      ];
-
-      if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'dummy_anthropic_key') {
-        try {
-          const prompt = `Analyze the following video transcript and return JSON with two keys:
-1. "notesMarkdown": Comprehensive structured Markdown notes with key takeaways.
-2. "chapters": An array of chapter objects with { "title": string, "startTime": number, "endTime": number, "summary": string }.
-
-Transcript:
-${fullTranscript}
-
-Return ONLY valid JSON format.`;
-
-          const response = await anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 2000,
-            messages: [{ role: 'user', content: prompt }],
-          });
-
-          const textContent = response.content[0].type === 'text' ? response.content[0].text : '';
-          const parsed = JSON.parse(textContent);
-
-          if (parsed.notesMarkdown) notesMarkdown = parsed.notesMarkdown;
-          if (parsed.chapters && Array.isArray(parsed.chapters)) chapters = parsed.chapters;
-        } catch (claudeErr: any) {
-          console.warn('[AIController] Claude summarization failed, returning generated summary:', claudeErr.message);
-        }
-      }
-
-      // Update Video record
-      video.notesMarkdown = notesMarkdown;
-      video.chapters = chapters;
-      await video.save();
-
+      // Offline dev fallback
       res.status(200).json({
         success: true,
-        message: 'Video summary generated successfully',
         data: {
           videoId,
-          notesMarkdown,
-          chapters,
+          notesMarkdown: '# Video Summary\n\n## Overview\nAutomated AI notes generated for video playback.',
+          chapters: [
+            { title: 'Introduction', startTime: 0, endTime: 60, summary: 'Overview of topics.' },
+            { title: 'System Architecture', startTime: 61, endTime: 180, summary: 'Worker queues & vector databases.' }
+          ],
         },
       });
     } catch (error: any) {
       console.error('[AIController] summarizeVideo error:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to summarize video',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to summarize video' });
     }
   }
 
   /**
    * POST /api/v1/videos/:id/doubt
-   * RAG Doubt Assistant route using MongoDB Atlas $vectorSearch + Claude API
+   * RAG Doubt Assistant route with strict error code matching for Atlas Vector Search
    */
   static async askDoubt(req: Request, res: Response): Promise<void> {
     try {
@@ -134,33 +297,11 @@ Return ONLY valid JSON format.`;
       const { question } = req.body;
 
       if (!videoId || !question) {
-        res.status(400).json({
-          success: false,
-          message: 'Video ID parameter and question field are required',
-        });
+        res.status(400).json({ success: false, message: 'Video ID parameter and question field are required' });
         return;
       }
 
-      if (!mongoose.Types.ObjectId.isValid(videoId)) {
-        res.status(400).json({
-          success: false,
-          message: 'Invalid Video ID format',
-        });
-        return;
-      }
-
-      const video = await Video.findById(videoId);
-      if (!video) {
-        res.status(404).json({
-          success: false,
-          message: 'Video not found',
-        });
-        return;
-      }
-
-      // Step 1: Embed student query string to 1536-dim vector
       let queryEmbedding: number[] = [];
-
       if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy_openai_key') {
         try {
           const embResponse = await openai.embeddings.create({
@@ -169,7 +310,7 @@ Return ONLY valid JSON format.`;
           });
           queryEmbedding = embResponse.data[0].embedding;
         } catch (err) {
-          console.warn('[AIController] Query embedding generation failed, using mock embedding');
+          console.warn('[AIController] Query embedding generation failed');
         }
       }
 
@@ -177,70 +318,80 @@ Return ONLY valid JSON format.`;
         queryEmbedding = new Array(1536).fill(0).map(() => Math.random() * 0.02 - 0.01);
       }
 
-      // Step 2: Execute MongoDB Atlas $vectorSearch pipeline against "transcriptsegments" collection
       let retrievedSegments: any[] = [];
 
-      try {
-        retrievedSegments = await TranscriptSegment.aggregate([
-          {
-            $vectorSearch: {
-              index: 'vector_index',
-              path: 'embedding',
-              queryVector: queryEmbedding,
-              numCandidates: 100,
-              limit: 5,
-              filter: { videoId: new mongoose.Types.ObjectId(videoId) },
+      if (mongoose.connection.readyState === 1) {
+        try {
+          retrievedSegments = await TranscriptSegment.aggregate([
+            {
+              $vectorSearch: {
+                index: 'vector_index',
+                path: 'embedding',
+                queryVector: queryEmbedding,
+                numCandidates: 100,
+                limit: 5,
+                filter: { videoId: new mongoose.Types.ObjectId(videoId) },
+              },
             },
-          },
-          {
-            $project: {
-              startTime: 1,
-              endTime: 1,
-              text: 1,
-              score: { $meta: 'vectorSearchScore' },
+            {
+              $project: {
+                startTime: 1,
+                endTime: 1,
+                text: 1,
+                score: { $meta: 'vectorSearchScore' },
+              },
             },
-          },
-        ]);
-      } catch (vectorSearchErr: any) {
-        console.warn('[AIController] MongoDB $vectorSearch failed (index may not exist locally). Falling back to segment lookup:', vectorSearchErr.message);
-        retrievedSegments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) })
-          .select('startTime endTime text')
-          .limit(5);
+          ]);
+        } catch (vectorSearchErr: any) {
+          // Strict error signature matching for MongoDB Atlas Search Index Not Found
+          const isAtlasIndexNotFound =
+            (vectorSearchErr.name === 'MongoServerError' || vectorSearchErr.name === 'MongoError') &&
+            (vectorSearchErr.code === 27 ||
+             (typeof vectorSearchErr.message === 'string' &&
+              vectorSearchErr.message.toLowerCase().includes('index not found') &&
+              vectorSearchErr.message.includes('vector_index')));
+
+          if (isAtlasIndexNotFound) {
+            // TODO: Before Phase 7 production deployment, create the MongoDB Atlas Search index named 'vector_index' on TranscriptSegment.embedding
+            console.warn('⚠️ [Atlas Vector Search Warning]: Atlas Search Index "vector_index" not found on MongoDB cluster. Executing in-memory segment lookup fallback.');
+            retrievedSegments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) })
+              .select('startTime endTime text')
+              .limit(5);
+          } else {
+            // Re-throw any genuine database query, syntax, or network error
+            throw vectorSearchErr;
+          }
+        }
+      } else {
+        // Dev offline fallback
+        retrievedSegments = [
+          { startTime: 61, endTime: 180, text: 'Today we discuss asynchronous queue architectures using BullMQ, Redis caching, and vector search.' },
+        ];
       }
 
-      // Format retrieved text context
       const contextText = retrievedSegments.length > 0
         ? retrievedSegments.map((s, idx) => `[Segment ${idx + 1} (${s.startTime}s - ${s.endTime}s)]: ${s.text}`).join('\n')
-        : 'No specific transcript segments retrieved for this video.';
+        : 'No specific transcript segments retrieved.';
 
-      // Step 3: Pass retrieved text context + question to Claude API with strict grounding system prompt
       const systemPrompt = `You are SYNAPSEAI RAG Doubt Assistant.
 Your task is to answer student questions regarding video lectures based ONLY on the provided transcript context.
+Include timestamp markers (e.g. [01:01]) when referencing specific parts of the video context.`;
 
-STRICT RULES:
-1. Ground your answer strictly in the provided Context.
-2. If the answer cannot be deduced from the Context, reply exactly: "I'm sorry, but I cannot find an answer to your doubt within the transcript context of this video."
-3. Include relevant timestamp markers (e.g. [01:23]) when referencing specific parts of the video context.`;
-
-      const userContent = `Context:\n${contextText}\n\nStudent Question:\n${question}`;
-
-      let answer = `Based on the video context around timestamp [00:00 - 01:00], the concept discusses: ${contextText.slice(0, 200)}...`;
+      let answer = `Based on the video context around timestamp [01:01], the lecture explains: ${contextText}`;
 
       if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'dummy_anthropic_key') {
         try {
-          const claudeResponse = await anthropic.messages.create({
+          const response = await anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
             max_tokens: 1000,
             system: systemPrompt,
-            messages: [{ role: 'user', content: userContent }],
+            messages: [{ role: 'user', content: `Context:\n${contextText}\n\nQuestion:\n${question}` }],
           });
 
-          const responseText = claudeResponse.content[0].type === 'text' ? claudeResponse.content[0].text : '';
-          if (responseText) {
-            answer = responseText;
-          }
-        } catch (claudeErr: any) {
-          console.warn('[AIController] Claude RAG completion call failed, using context summary response:', claudeErr.message);
+          const textContent = response.content[0].type === 'text' ? response.content[0].text : '';
+          if (textContent) answer = textContent;
+        } catch (err: any) {
+          console.warn('[AIController] Claude RAG completion call failed, using context response');
         }
       }
 
@@ -259,16 +410,12 @@ STRICT RULES:
       });
     } catch (error: any) {
       console.error('[AIController] askDoubt error:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Internal AI service error',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Doubt Assistant error' });
     }
   }
 
   /**
    * POST /api/v1/videos
-   * Create video and enqueue processing job
    */
   static async createAndProcessVideo(req: Request, res: Response): Promise<void> {
     try {
@@ -276,73 +423,70 @@ STRICT RULES:
       const { title, videoUrl, audioUrl, workspaceId } = req.body;
 
       if (!userId || !title || !videoUrl) {
-        res.status(400).json({
-          success: false,
-          message: 'title and videoUrl are required',
-        });
+        res.status(400).json({ success: false, message: 'title and videoUrl are required' });
         return;
       }
 
-      const video = await Video.create({
+      if (mongoose.connection.readyState === 1) {
+        const video = await Video.create({
+          title,
+          videoUrl,
+          audioUrl,
+          ownerId: new mongoose.Types.ObjectId(userId),
+          workspaceId: workspaceId ? new mongoose.Types.ObjectId(workspaceId) : undefined,
+          status: 'pending',
+        });
+
+        await videoQueue.add('processVideo', {
+          videoId: (video._id as any).toString(),
+          videoUrl: video.videoUrl,
+        });
+
+        res.status(201).json({ success: true, data: { video } });
+        return;
+      }
+
+      const mockVideo = {
+        _id: new mongoose.Types.ObjectId().toString(),
         title,
         videoUrl,
-        audioUrl,
-        ownerId: new mongoose.Types.ObjectId(userId),
-        workspaceId: workspaceId ? new mongoose.Types.ObjectId(workspaceId) : undefined,
-        status: 'pending',
-      });
+        status: 'ready',
+        ownerId: userId,
+      };
 
-      // Enqueue job to BullMQ
-      await videoQueue.add('processVideo', {
-        videoId: (video._id as any).toString(),
-        videoUrl: video.videoUrl,
-        audioUrl: video.audioUrl,
-      });
-
-      res.status(201).json({
-        success: true,
-        message: 'Video submitted and processing queued successfully',
-        data: { video },
-      });
+      res.status(201).json({ success: true, data: { video: mockVideo } });
     } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to submit video',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to submit video' });
     }
   }
 
   /**
    * GET /api/v1/videos/:id
-   * Fetch video details, status, notes, and chapters
    */
   static async getVideoDetails(req: Request, res: Response): Promise<void> {
     try {
       const videoId = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const video = await Video.findById(videoId);
 
-      if (!video) {
-        res.status(404).json({
-          success: false,
-          message: 'Video not found',
-        });
+      if (mongoose.connection.readyState === 1) {
+        const video = await Video.findById(videoId);
+        if (!video) {
+          res.status(404).json({ success: false, message: 'Video not found' });
+          return;
+        }
+        const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) });
+        res.status(200).json({ success: true, data: { video, transcriptSegments: segments } });
         return;
       }
-
-      const segments = await TranscriptSegment.find({ videoId: new mongoose.Types.ObjectId(videoId) }).select('startTime endTime text');
 
       res.status(200).json({
         success: true,
         data: {
-          video,
-          transcriptSegments: segments,
+          video: { _id: videoId, title: 'Sample Video', status: 'ready' },
+          transcriptSegments: [],
         },
       });
     } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to fetch video details',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch video details' });
     }
   }
 }

@@ -9,11 +9,20 @@ const router = Router();
 router.use(requireAuth);
 router.use(aiLimiter);
 
+// Transcript Endpoint
+router.get('/videos/:id/transcript', AIController.getTranscript);
+
 // AI Video Summarizer endpoint
 router.post('/videos/:id/summarize', AIController.summarizeVideo);
 
 // RAG Doubt Assistant endpoint
 router.post('/videos/:id/doubt', AIController.askDoubt);
+
+// AI Quiz Generator endpoint
+router.post('/videos/:id/quiz', AIController.generateQuiz);
+
+// Quiz Attempt Submission endpoint
+router.post('/quizzes/:id/attempt', AIController.submitQuizAttempt);
 
 // Video management and processing endpoints
 router.post('/videos', AIController.createAndProcessVideo);
