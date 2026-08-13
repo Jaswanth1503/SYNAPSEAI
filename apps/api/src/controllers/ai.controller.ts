@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { v2 as cloudinary } from 'cloudinary';
 import { TranscriptSegment } from '../models/TranscriptSegment';
 import { Video } from '../models/Video';
 import { videoQueue } from '../workers/videoWorker';
@@ -14,7 +15,53 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_anthropic_key',
 });
 
+// Configure Cloudinary SDK
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'synapseai',
+  api_key: process.env.CLOUDINARY_API_KEY || '1234567890',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'secret',
+});
+
 export class AIController {
+  /**
+   * POST /api/v1/videos/presign
+   * Generates signed Cloudinary upload parameters for browser-direct video uploads.
+   * Prevents API gateway payload timeouts and memory spikes on Vercel/Render.
+   */
+  static async generatePresignedUploadUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const timestamp = Math.round(new Date().getTime() / 1000);
+      const folder = 'synapseai_lectures';
+
+      const paramsToSign = {
+        timestamp,
+        folder,
+      };
+
+      const apiSecret = process.env.CLOUDINARY_API_SECRET || 'secret';
+      const signature = cloudinary.utils.api_sign_request(paramsToSign, apiSecret);
+
+      res.status(200).json({
+        success: true,
+        message: 'Presigned upload signature generated successfully',
+        data: {
+          signature,
+          timestamp,
+          folder,
+          apiKey: process.env.CLOUDINARY_API_KEY || '1234567890',
+          cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'synapseai',
+          uploadUrl: `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME || 'synapseai'}/video/upload`,
+        },
+      });
+    } catch (error: any) {
+      console.error('[AIController] Error generating presigned upload signature:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to generate presigned upload signature',
+      });
+    }
+  }
+
   /**
    * POST /api/v1/videos/:id/summarize
    * Explicit endpoint to trigger/fetch AI Video Summary using Claude API
@@ -273,7 +320,8 @@ STRICT RULES:
   static async createAndProcessVideo(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
-      const { title, videoUrl, audioUrl, workspaceId } = req.body;
+      const targetWorkspaceId = req.user?.workspaceId || req.body.workspaceId;
+      const { title, videoUrl, audioUrl } = req.body;
 
       if (!userId || !title || !videoUrl) {
         res.status(400).json({
@@ -288,7 +336,9 @@ STRICT RULES:
         videoUrl,
         audioUrl,
         ownerId: new mongoose.Types.ObjectId(userId),
-        workspaceId: workspaceId ? new mongoose.Types.ObjectId(workspaceId) : undefined,
+        workspaceId: targetWorkspaceId && mongoose.Types.ObjectId.isValid(targetWorkspaceId)
+          ? new mongoose.Types.ObjectId(targetWorkspaceId)
+          : undefined,
         status: 'pending',
       });
 

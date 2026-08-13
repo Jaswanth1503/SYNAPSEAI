@@ -6,6 +6,8 @@
     "packages/*"
   ],
   "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
     "dev:api": "npm --prefix apps/api run dev",
     "build:api": "npm --prefix apps/api run build"
   }

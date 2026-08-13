@@ -6,6 +6,7 @@ export interface JwtPayloadUser {
   role: UserRole;
   personalWorkspaceId?: string;
   currentOrgId?: string;
+  workspaceId?: string; // Stateless active workspace from X-Workspace-ID header or fallback
 }
 
 declare global {

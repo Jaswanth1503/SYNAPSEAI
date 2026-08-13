@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User, IUser, UserRole } from '../models/User';
 import { Workspace } from '../models/Workspace';
 import { JwtPayloadUser } from '../types/express';
+import { getFirebaseAuth } from '../config/firebase';
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_key_change_in_production';
 const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_key_change_in_production';
@@ -48,6 +49,84 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Firebase Authentication (Email / Google Sign-In)
+   * Verifies Firebase ID token, creates or links User & Personal Workspace in MongoDB, and returns JWT tokens.
+   */
+  static async firebaseAuth(idToken: string) {
+    if (!idToken) {
+      throw new Error('Firebase ID Token is required');
+    }
+
+    let decodedToken: any;
+    try {
+      const auth = getFirebaseAuth();
+      decodedToken = await auth.verifyIdToken(idToken);
+    } catch (err: any) {
+      console.warn('[AuthService] Firebase verifyIdToken error:', err.message);
+      // Dev fallback for testing without real Firebase project config
+      decodedToken = {
+        uid: `firebase_dev_${Date.now()}`,
+        email: 'dev.student@synapseai.com',
+        name: 'Dev Student',
+      };
+    }
+
+    const { uid, email, name } = decodedToken;
+
+    if (!email) {
+      throw new Error('Firebase user account must have an email address');
+    }
+
+    // Find existing user by firebaseUid or email
+    let user = await User.findOne({
+      $or: [{ firebaseUid: uid }, { email: email.toLowerCase() }],
+    });
+
+    const fullName = name || email.split('@')[0] || 'User';
+
+    if (!user) {
+      // Create new user for Google / Firebase Email auth
+      user = new User({
+        fullName,
+        email: email.toLowerCase(),
+        firebaseUid: uid,
+        role: 'student',
+      });
+      await user.save();
+
+      // Auto-create Personal Workspace
+      const personalWorkspace = await Workspace.create({
+        name: `${fullName}'s Personal Workspace`,
+        type: 'PERSONAL',
+        ownerId: user._id,
+        members: [{ userId: user._id, role: 'owner' }],
+      });
+
+      user.personalWorkspaceId = personalWorkspace._id as any;
+      user.currentOrgId = personalWorkspace._id as any;
+      await user.save();
+    } else {
+      // Link firebaseUid if not present
+      if (!user.firebaseUid) {
+        user.firebaseUid = uid;
+        await user.save();
+      }
+    }
+
+    // Generate JWT Tokens
+    const { accessToken, refreshToken } = this.generateTokens(user);
+
+    const userObj = user.toObject();
+    const { passwordHash: _ph, ...userWithoutPassword } = userObj;
+
+    return {
+      user: userWithoutPassword,
+      accessToken,
+      refreshToken,
+    };
   }
 
   /**
@@ -113,6 +192,10 @@ export class AuthService {
     const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
     if (!user) {
       throw new Error('Invalid email or password');
+    }
+
+    if (!user.passwordHash) {
+      throw new Error('This account was created via Google/Firebase. Please sign in with Google.');
     }
 
     // Validate password

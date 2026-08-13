@@ -5,7 +5,8 @@ export type UserRole = 'student' | 'instructor' | 'org_admin';
 export interface IUser extends Document {
   fullName: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
+  firebaseUid?: string;
   role: UserRole;
   personalWorkspaceId?: mongoose.Types.ObjectId;
   currentOrgId?: mongoose.Types.ObjectId;
@@ -29,8 +30,13 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     passwordHash: {
       type: String,
-      required: [true, 'Password hash is required'],
       select: false,
+    },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
     },
     role: {
       type: String,

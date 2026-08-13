@@ -3,11 +3,12 @@ import { env } from './env';
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(env.MONGODB_URI);
+    const conn = await mongoose.connect(env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // 5 second timeout for local dev resilience
+    });
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
   } catch (error: any) {
-    console.warn(`⚠️ [MongoDB Warning]: ${error.message}`);
-    console.warn('⚠️ Server will continue running for route & AI endpoint testing.');
+    console.warn(`[MongoDB] Local connection warning (${error.message}). Server running in dev fallback mode.`);
   }
 };
 
