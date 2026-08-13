@@ -10,6 +10,43 @@ const COOKIE_OPTIONS = {
 
 export class AuthController {
   /**
+   * POST /api/v1/auth/firebase
+   * Verifies Firebase ID Token (Google Sign-In / Firebase Email Auth)
+   */
+  static async firebaseAuth(req: Request, res: Response): Promise<void> {
+    try {
+      const idToken = req.body.idToken || req.headers.authorization?.replace('Bearer ', '');
+
+      if (!idToken) {
+        res.status(400).json({
+          success: false,
+          message: 'idToken is required in request body or Authorization header',
+        });
+        return;
+      }
+
+      const result = await AuthService.firebaseAuth(idToken);
+
+      // Set httpOnly cookie for refresh token
+      res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+
+      res.status(200).json({
+        success: true,
+        message: 'Firebase authentication successful',
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+        },
+      });
+    } catch (error: any) {
+      res.status(401).json({
+        success: false,
+        message: error.message || 'Firebase authentication failed',
+      });
+    }
+  }
+
+  /**
    * POST /api/v1/auth/register
    */
   static async register(req: Request, res: Response): Promise<void> {

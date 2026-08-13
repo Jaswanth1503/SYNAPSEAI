@@ -5,15 +5,17 @@ import { aiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-// Protect AI routes with JWT Auth and AI Rate Limiter (10 req / 1 min)
+// Protect AI & Video routes with JWT Auth
 router.use(requireAuth);
-router.use(aiLimiter);
+
+// Client-Direct Presigned Upload URL Endpoint (Prevents API gateway payload limits & timeouts)
+router.post('/videos/presign', AIController.generatePresignedUploadUrl);
 
 // AI Video Summarizer endpoint
-router.post('/videos/:id/summarize', AIController.summarizeVideo);
+router.post('/videos/:id/summarize', aiLimiter, AIController.summarizeVideo);
 
 // RAG Doubt Assistant endpoint
-router.post('/videos/:id/doubt', AIController.askDoubt);
+router.post('/videos/:id/doubt', aiLimiter, AIController.askDoubt);
 
 // Video management and processing endpoints
 router.post('/videos', AIController.createAndProcessVideo);

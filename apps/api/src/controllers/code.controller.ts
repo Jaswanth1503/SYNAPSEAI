@@ -11,10 +11,13 @@ export interface ExecuteCodeBody {
   stdin?: string;
 }
 
+// Internal RFC 1918 & Cloud Metadata Regex to prevent Server-Side Request Forgery (SSRF)
+const SSRF_INTERNAL_IP_REGEX = /(127\.0\.0\.1|localhost|169\.254\.169\.254|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})/i;
+
 export class CodeController {
   /**
    * POST /api/v1/code/execute
-   * Proxy request to Judge0 Code Execution Engine
+   * Proxy request to Judge0 Code Execution Engine with SSRF validation and resource limits
    */
   static async executeCode(req: Request, res: Response): Promise<void> {
     try {
@@ -24,6 +27,15 @@ export class CodeController {
         res.status(400).json({
           success: false,
           message: 'language_id and source_code are required',
+        });
+        return;
+      }
+
+      // Security Check: Block internal RFC 1918 IP references to prevent SSRF sandbox attacks
+      if (SSRF_INTERNAL_IP_REGEX.test(source_code)) {
+        res.status(400).json({
+          success: false,
+          message: 'Security Violation: Internal network requests are strictly forbidden within the code sandbox.',
         });
         return;
       }
@@ -71,7 +83,6 @@ export class CodeController {
     } catch (error: any) {
       console.error('[CodeController] Execution error:', error?.response?.data || error.message);
 
-      // Handle Judge0 API or timeout errors cleanly
       const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error.message;
 
       res.status(500).json({

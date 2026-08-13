@@ -7,7 +7,8 @@ const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_key_
 
 /**
  * Middleware: requireAuth
- * Extracts Bearer JWT token from Authorization header and attaches decoded payload to req.user
+ * Extracts Bearer JWT token from Authorization header and attaches decoded payload to req.user.
+ * Also extracts stateless X-Workspace-ID header to eliminate multi-tab DB race conditions.
  */
 export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
@@ -24,6 +25,11 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
 
   try {
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayloadUser;
+    
+    // Extract stateless X-Workspace-ID header if provided, otherwise fallback to user context
+    const headerWorkspaceId = req.headers['x-workspace-id'] as string;
+    decoded.workspaceId = headerWorkspaceId || decoded.currentOrgId || decoded.personalWorkspaceId;
+
     req.user = decoded;
     next();
   } catch (error) {
