@@ -18,11 +18,24 @@ export const connection = new Redis({
   port: REDIS_PORT,
   password: REDIS_PASSWORD,
   maxRetriesPerRequest: null,
+  retryStrategy(times) {
+    if (times > 2) {
+      console.warn('[VideoWorker] Local Redis server not running on 127.0.0.1:6379. Queue operations paused.');
+      return null; // Stop retrying repeatedly
+    }
+    return 1000;
+  },
+});
+
+connection.on('error', (err: any) => {
+  if (err.code === 'ECONNREFUSED') {
+    // Gracefully handled offline Redis
+  } else {
+    console.error('[VideoWorker Redis Error]:', err.message);
+  }
 });
 
 export const QUEUE_NAME = 'video-processing';
-
-export const videoQueue = new Queue(QUEUE_NAME, { connection });
 
 export interface VideoProcessingJobData {
   videoId: string;
@@ -196,18 +209,40 @@ Return ONLY valid JSON format.`;
   }
 };
 
-export const videoWorker = new Worker<VideoProcessingJobData>(
-  QUEUE_NAME,
-  async (job) => {
-    await processVideoJob(job);
-  },
-  { connection }
-);
+let videoQueue: Queue<VideoProcessingJobData> | null = null;
+let videoWorker: Worker<VideoProcessingJobData> | null = null;
 
-videoWorker.on('completed', (job) => {
-  console.log(`[VideoWorker] Job ${job.id} completed successfully`);
-});
+try {
+  videoQueue = new Queue(QUEUE_NAME, { connection });
+  videoWorker = new Worker<VideoProcessingJobData>(
+    QUEUE_NAME,
+    async (job) => {
+      await processVideoJob(job);
+    },
+    { connection }
+  );
 
-videoWorker.on('failed', (job, err) => {
-  console.error(`[VideoWorker] Job ${job?.id} failed:`, err);
-});
+  if (videoQueue) {
+    videoQueue.on('error', (err: any) => {
+      // Suppress offline Redis stream log spam
+    });
+  }
+
+  if (videoWorker) {
+    videoWorker.on('error', (err: any) => {
+      // Suppress offline Redis stream log spam
+    });
+
+    videoWorker.on('completed', (job) => {
+      console.log(`[VideoWorker] Job ${job.id} completed successfully`);
+    });
+
+    videoWorker.on('failed', (job, err) => {
+      console.error(`[VideoWorker] Job ${job?.id} failed:`, err);
+    });
+  }
+} catch (e: any) {
+  console.warn('[VideoWorker] BullMQ initialization skipped (Redis offline).');
+}
+
+export { videoQueue, videoWorker };

@@ -61,7 +61,10 @@ def generate_embedding(text: str) -> List[float]:
     gemini_key = os.environ.get("GEMINI_API_KEY", "")
     gemini_err = None
     if gemini_key and gemini_key != "your_gemini_api_key_here":
-        import google.generativeai as genai
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            import google.generativeai as genai
         genai.configure(api_key=gemini_key)
 
         for g_model in ["models/gemini-embedding-001", "models/gemini-embedding-2-preview", "models/gemini-embedding-2"]:

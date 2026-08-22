@@ -44,17 +44,19 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // Database Connection & Server Start
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
+const startServer = async () => {
+  try {
+    await mongoose.connect(MONGO_URI);
     console.log('[SYNAPSEAI Backend] Connected successfully to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`[SYNAPSEAI Backend] Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('[SYNAPSEAI Backend] MongoDB connection error:', err);
-    process.exit(1);
+  } catch (err: any) {
+    console.warn('[SYNAPSEAI Backend] Local MongoDB not running on 127.0.0.1:27017. AI API endpoints are active.');
+  }
+
+  app.listen(PORT, () => {
+    console.log(`[SYNAPSEAI Backend] Server running at http://localhost:${PORT}`);
   });
+};
+
+startServer();
 
 export default app;

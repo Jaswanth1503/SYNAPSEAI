@@ -103,7 +103,10 @@ class GeminiProvider(BaseLLMProvider):
             )
 
         try:
-            import google.generativeai as genai
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=FutureWarning)
+                import google.generativeai as genai
             genai.configure(api_key=self.api_key)
 
             full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
@@ -129,8 +132,8 @@ class GeminiProvider(BaseLLMProvider):
                         last_err = m_err
                         err_msg = str(m_err).lower()
                         if "429" in err_msg or "resource_exhausted" in err_msg or "quota" in err_msg:
-                            sleep_time = (attempt + 1) * 30.0
-                            logger.warning(f"[GeminiProvider] 429 Rate Limit hit on '{m_name}'. Waiting {sleep_time}s for free tier quota reset (attempt {attempt+1}/4)...")
+                            sleep_time = (attempt + 1) * 5.0
+                            logger.warning(f"[GeminiProvider] 429 Rate Limit hit on '{m_name}'. Waiting {sleep_time}s (attempt {attempt+1}/4)...")
                             time.sleep(sleep_time)
                         else:
                             logger.debug(f"[GeminiProvider] Model '{m_name}' failed: {m_err}. Trying next model...")

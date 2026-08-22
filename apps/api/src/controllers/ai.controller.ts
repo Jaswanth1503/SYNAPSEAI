@@ -292,12 +292,14 @@ STRICT RULES:
         status: 'pending',
       });
 
-      // Enqueue job to BullMQ
-      await videoQueue.add('processVideo', {
-        videoId: (video._id as any).toString(),
-        videoUrl: video.videoUrl,
-        audioUrl: video.audioUrl,
-      });
+      // Enqueue job to BullMQ if Redis is connected
+      if (videoQueue) {
+        await videoQueue.add('processVideo', {
+          videoId: (video._id as any).toString(),
+          videoUrl: video.videoUrl,
+          audioUrl: video.audioUrl,
+        });
+      }
 
       res.status(201).json({
         success: true,
