@@ -9,7 +9,6 @@ import { env } from './config/env';
 import { connectDB } from './config/db';
 
 import authRoutes from './routes/auth.routes';
-import videoRoutes from './routes/video.routes';
 import workspaceRoutes from './routes/workspace.routes';
 import videoRoutes from './routes/video.routes';
 import codeRoutes from './routes/code.routes';
@@ -23,7 +22,6 @@ import searchRoutes from './routes/search.routes';
 import flashcardRoutes from './routes/flashcard.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import certificateRoutes from './routes/certificate.routes';
-import jobRoutes from './routes/job.routes';
 
 import { generalLimiter } from './middleware/rateLimiter';
 import { globalErrorHandler } from './middleware/error';
@@ -61,7 +59,6 @@ app.use('/api', generalLimiter);
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/videos', videoRoutes);
 app.use('/api/v1/workspaces', workspaceRoutes);
 app.use('/api/v1/videos', videoRoutes);
 app.use('/api/v1/code', codeRoutes);
@@ -75,35 +72,29 @@ app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
-app.use('/api/v1/jobs', jobRoutes);
 
 // Health Check Endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     service: 'SYNAPSEAI Backend API',
+    environment: env.NODE_ENV,
     timestamp: new Date().toISOString(),
+    dbConnected: mongoose.connection.readyState === 1,
   });
 });
 
-// 404 Handler
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: 'API route not found',
-  });
-});
-
-// Global Error Handler Middleware
+// Global Production Error Handling Middleware (Sentry Integration)
 app.use(globalErrorHandler);
 
-// Start Express Server
-const PORT = env.PORT || 5000;
-
-connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log(`[SYNAPSEAI API] Server running in ${env.NODE_ENV} mode on port ${PORT}`);
+// Start Server
+const startServer = async () => {
+  await connectDB();
+  server.listen(env.PORT, () => {
+    console.log(`🚀 [SYNAPSEAI Backend] Server running on http://localhost:${env.PORT}`);
   });
-});
+};
+
+startServer();
 
 export default app;
