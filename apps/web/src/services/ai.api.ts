@@ -49,6 +49,14 @@ export interface QuizAttemptRecord {
   completedAt: string;
 }
 
+export interface MindMapNode {
+  id: string;
+  label: string;
+  parentId: string | null;
+  category: 'root' | 'pillar' | 'subconcept';
+  description: string;
+}
+
 export const aiApi = {
   async getTranscript(videoId: string): Promise<TranscriptSegmentRecord[]> {
     const res = await apiClient.get(`/ai/videos/${videoId}/transcript`);
@@ -71,7 +79,12 @@ export const aiApi = {
   },
 
   async submitQuizAttempt(videoId: string, answers: QuizAnswerPayload[]): Promise<QuizAttemptRecord> {
-    const res = await apiClient.post(`/ai/quizzes/${videoId}/attempt`, { answers });
+    const res = await apiClient.post(`/quizzes/${videoId}/attempt`, { answers });
     return res.data.data.attempt;
+  },
+
+  async generateMindMap(videoId: string): Promise<{ videoId: string; nodes: MindMapNode[] }> {
+    const res = await apiClient.post(`/ai/mindmap/${videoId}`);
+    return res.data.data;
   },
 };

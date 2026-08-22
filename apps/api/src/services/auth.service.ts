@@ -18,6 +18,7 @@ export interface RegisterInput {
   email: string;
   password: string;
   role?: UserRole;
+  organizationId?: string;
 }
 
 export interface LoginInput {
@@ -34,13 +35,14 @@ export class AuthService {
   /**
    * Helper to generate JWT Access and Refresh tokens
    */
-  private static generateTokens(userPayload: { id: string; email: string; role: UserRole; personalWorkspaceId?: string; currentOrgId?: string }): AuthTokens {
+  private static generateTokens(userPayload: { id: string; email: string; role: UserRole; personalWorkspaceId?: string; currentOrgId?: string; organizationId?: string }): AuthTokens {
     const payload: JwtPayloadUser = {
       id: userPayload.id,
       email: userPayload.email,
       role: userPayload.role,
       personalWorkspaceId: userPayload.personalWorkspaceId,
       currentOrgId: userPayload.currentOrgId,
+      organizationId: userPayload.organizationId || userPayload.currentOrgId,
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
@@ -58,8 +60,12 @@ export class AuthService {
    * Register a new user and auto-create their Personal Workspace
    */
   static async register(input: RegisterInput) {
-    const { fullName, email, password, role } = input;
+    const { fullName, email, password, role, organizationId } = input;
     const lowerEmail = email.toLowerCase();
+
+    if (!password || password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
 
     // If MongoDB is connected, execute Mongoose queries
     if (mongoose.connection.readyState === 1) {
@@ -76,6 +82,7 @@ export class AuthService {
         email: lowerEmail,
         passwordHash,
         role: role || 'student',
+        currentOrgId: organizationId && mongoose.Types.ObjectId.isValid(organizationId) ? new mongoose.Types.ObjectId(organizationId) : undefined,
       });
 
       await user.save();
@@ -88,7 +95,9 @@ export class AuthService {
       });
 
       user.personalWorkspaceId = personalWorkspace._id as any;
-      user.currentOrgId = personalWorkspace._id as any;
+      if (!user.currentOrgId) {
+        user.currentOrgId = personalWorkspace._id as any;
+      }
       await user.save();
 
       const { accessToken, refreshToken } = this.generateTokens({
@@ -97,6 +106,7 @@ export class AuthService {
         role: user.role,
         personalWorkspaceId: user.personalWorkspaceId?.toString(),
         currentOrgId: user.currentOrgId?.toString(),
+        organizationId: organizationId || user.currentOrgId?.toString(),
       });
 
       const userObj = user.toObject();
@@ -112,7 +122,7 @@ export class AuthService {
     }
 
     const mockUserId = new mongoose.Types.ObjectId().toString();
-    const mockWorkspaceId = new mongoose.Types.ObjectId().toString();
+    const mockWorkspaceId = organizationId || new mongoose.Types.ObjectId().toString();
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -124,6 +134,7 @@ export class AuthService {
       role: role || 'student',
       personalWorkspaceId: mockWorkspaceId,
       currentOrgId: mockWorkspaceId,
+      organizationId: mockWorkspaceId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -136,6 +147,7 @@ export class AuthService {
       role: role || 'student',
       personalWorkspaceId: mockWorkspaceId,
       currentOrgId: mockWorkspaceId,
+      organizationId: mockWorkspaceId,
     });
 
     const { passwordHash: _ph, ...userWithoutPassword } = mockUser;
@@ -143,20 +155,20 @@ export class AuthService {
   }
 
   /**
-   * Login user with credentials
+   * Login user with email and password
    */
   static async login(input: LoginInput) {
     const { email, password } = input;
     const lowerEmail = email.toLowerCase();
 
     if (mongoose.connection.readyState === 1) {
-      const user = await User.findOne({ email: lowerEmail }).select('+passwordHash');
+      const user = await User.findOne({ email: lowerEmail });
       if (!user) {
         throw new Error('Invalid email or password');
       }
 
-      const isPasswordMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordMatch) {
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid) {
         throw new Error('Invalid email or password');
       }
 
@@ -166,6 +178,7 @@ export class AuthService {
         role: user.role,
         personalWorkspaceId: user.personalWorkspaceId?.toString(),
         currentOrgId: user.currentOrgId?.toString(),
+        organizationId: user.currentOrgId?.toString(),
       });
 
       const userObj = user.toObject();
@@ -174,14 +187,14 @@ export class AuthService {
       return { user: userWithoutPassword, accessToken, refreshToken };
     }
 
-    // In-memory fallback
+    // In-memory login fallback
     const user = inMemoryUsers.get(lowerEmail);
     if (!user) {
       throw new Error('Invalid email or password');
     }
 
-    const isPasswordMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordMatch) {
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
       throw new Error('Invalid email or password');
     }
 
@@ -191,6 +204,7 @@ export class AuthService {
       role: user.role,
       personalWorkspaceId: user.personalWorkspaceId,
       currentOrgId: user.currentOrgId,
+      organizationId: user.organizationId || user.currentOrgId,
     });
 
     const { passwordHash: _ph, ...userWithoutPassword } = user;
@@ -198,69 +212,36 @@ export class AuthService {
   }
 
   /**
-   * Refresh Access Token using Refresh Token
+   * Refresh JWT token
    */
-  static async refreshToken(refreshTokenString: string) {
-    if (!refreshTokenString) {
-      throw new Error('Refresh token is required');
-    }
-
+  static async refreshToken(refreshToken: string) {
     try {
-      const decoded = jwt.verify(refreshTokenString, REFRESH_TOKEN_SECRET) as JwtPayloadUser;
-
-      if (mongoose.connection.readyState === 1) {
-        const user = await User.findById(decoded.id);
-        if (!user) {
-          throw new Error('User not found');
-        }
-
-        const { accessToken, refreshToken: newRefreshToken } = this.generateTokens({
-          id: (user._id as any).toString(),
-          email: user.email,
-          role: user.role,
-          personalWorkspaceId: user.personalWorkspaceId?.toString(),
-          currentOrgId: user.currentOrgId?.toString(),
-        });
-
-        const userObj = user.toObject();
-        const { passwordHash: _ph, ...userWithoutPassword } = userObj;
-
-        return { user: userWithoutPassword, accessToken, refreshToken: newRefreshToken };
-      }
-
-      // In-memory fallback
-      const user = Array.from(inMemoryUsers.values()).find((u) => u._id === decoded.id);
-      if (!user) {
-        const mockUserPayload = {
-          id: decoded.id,
-          email: decoded.email,
-          role: decoded.role || 'student',
-          personalWorkspaceId: decoded.personalWorkspaceId || 'mock_ws_id',
-          currentOrgId: decoded.currentOrgId || 'mock_ws_id',
-        };
-        const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(mockUserPayload);
-        const mockUserObj = {
-          _id: decoded.id,
-          fullName: 'QA Student',
-          email: decoded.email,
-          role: decoded.role || 'student',
-          personalWorkspaceId: decoded.personalWorkspaceId || 'mock_ws_id',
-          currentOrgId: decoded.currentOrgId || 'mock_ws_id',
-        };
-        return { user: mockUserObj, accessToken, refreshToken: newRefreshToken };
-      }
+      const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as JwtPayloadUser;
 
       const { accessToken, refreshToken: newRefreshToken } = this.generateTokens({
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        personalWorkspaceId: user.personalWorkspaceId,
-        currentOrgId: user.currentOrgId,
+        id: decoded.id,
+        email: decoded.email,
+        role: decoded.role,
+        personalWorkspaceId: decoded.personalWorkspaceId,
+        currentOrgId: decoded.currentOrgId,
+        organizationId: decoded.organizationId,
       });
-      const { passwordHash: _ph, ...userWithoutPassword } = user;
 
-      return { user: userWithoutPassword, accessToken, refreshToken: newRefreshToken };
-    } catch (err: any) {
+      let userObj: any = {
+        _id: decoded.id,
+        email: decoded.email,
+        role: decoded.role,
+        personalWorkspaceId: decoded.personalWorkspaceId,
+        currentOrgId: decoded.currentOrgId,
+      };
+
+      if (mongoose.connection.readyState === 1) {
+        const found = await User.findById(decoded.id).select('-passwordHash');
+        if (found) userObj = found.toObject();
+      }
+
+      return { user: userObj, accessToken, refreshToken: newRefreshToken };
+    } catch (_error) {
       throw new Error('Invalid or expired refresh token');
     }
   }

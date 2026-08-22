@@ -13,6 +13,7 @@ import videoRoutes from './routes/video.routes';
 import workspaceRoutes from './routes/workspace.routes';
 import codeRoutes from './routes/code.routes';
 import aiRoutes from './routes/ai.routes';
+import quizRoutes from './routes/quiz.routes';
 import jamRoutes from './routes/jam.routes';
 import resumeRoutes from './routes/resume.routes';
 import interviewRoutes from './routes/interview.routes';
@@ -21,6 +22,7 @@ import searchRoutes from './routes/search.routes';
 import flashcardRoutes from './routes/flashcard.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import certificateRoutes from './routes/certificate.routes';
+import jobRoutes from './routes/job.routes';
 
 import { generalLimiter } from './middleware/rateLimiter';
 import { globalErrorHandler } from './middleware/error';
@@ -62,6 +64,7 @@ app.use('/api/v1/videos', videoRoutes);
 app.use('/api/v1/workspaces', workspaceRoutes);
 app.use('/api/v1/code', codeRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/quizzes', quizRoutes);
 app.use('/api/v1/jam-sessions', jamRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/interviews', interviewRoutes);
@@ -70,29 +73,35 @@ app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
+app.use('/api/v1/jobs', jobRoutes);
 
 // Health Check Endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     service: 'SYNAPSEAI Backend API',
-    environment: env.NODE_ENV,
     timestamp: new Date().toISOString(),
-    dbConnected: mongoose.connection.readyState === 1,
   });
 });
 
-// Global Production Error Handling Middleware (Sentry Integration)
+// 404 Handler
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: 'API route not found',
+  });
+});
+
+// Global Error Handler Middleware
 app.use(globalErrorHandler);
 
-// Start Server
-const startServer = async () => {
-  await connectDB();
-  server.listen(env.PORT, () => {
-    console.log(`🚀 [SYNAPSEAI Backend] Server running on http://localhost:${env.PORT}`);
-  });
-};
+// Start Express Server
+const PORT = env.PORT || 5000;
 
-startServer();
+connectDB().then(() => {
+  server.listen(PORT, () => {
+    console.log(`[SYNAPSEAI API] Server running in ${env.NODE_ENV} mode on port ${PORT}`);
+  });
+});
 
 export default app;

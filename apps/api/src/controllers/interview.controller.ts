@@ -8,6 +8,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_anthropic_key',
 });
 
+const inMemoryInterviews: Map<string, any> = new Map();
+
 export const startInterviewSchema = z.object({
   role: z.string().min(2, 'role is required'),
   category: z.string().optional().default('Technical'),
@@ -19,6 +21,61 @@ export const answerInterviewSchema = z.object({
 });
 
 export class InterviewController {
+  /**
+   * POST /api/v1/interviews/generate-questions
+   * Generates mock interview questions & stream config for text, audio, or video mode
+   */
+  static async generateQuestions(req: Request, res: Response): Promise<void> {
+    try {
+      const { roleId = 'fullstack_ai', mode = 'text' } = req.body;
+
+      const questions = [
+        {
+          id: 'q1',
+          question: 'How do you structure microservices communication between Node.js backends and Python AI model workers?',
+          category: 'Architecture',
+        },
+        {
+          id: 'q2',
+          question: 'Explain how you minimize latency when streaming AI LLM responses to a web client.',
+          category: 'Optimization',
+        },
+      ];
+
+      let audioStreamConfig: any = null;
+      let webRtcConfig: any = null;
+
+      if (mode === 'audio' || mode === 'video') {
+        audioStreamConfig = {
+          sampleRate: 48000,
+          channels: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          codec: 'opus',
+        };
+        webRtcConfig = {
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+          maxFramerate: mode === 'video' ? 30 : undefined,
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Mock interview questions generated',
+        data: {
+          roleId,
+          mode,
+          questions,
+          audioStreamConfig,
+          webRtcConfig,
+        },
+      });
+    } catch (error: any) {
+      console.error('[InterviewController] Error generating questions:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to generate interview questions' });
+    }
+  }
+
   /**
    * POST /api/v1/interviews/start
    * Start mock interview and return initial technical question
@@ -61,43 +118,67 @@ Return JSON with key "questionText": string.`;
 
           const textContent = response.content[0].type === 'text' ? response.content[0].text : '';
           const parsed = JSON.parse(textContent);
-          if (parsed.questionText) initialQuestionText = parsed.questionText;
+          if (parsed.questionText) {
+            initialQuestionText = parsed.questionText;
+          }
         } catch (err: any) {
-          console.warn('[InterviewController] Claude initial question failed, using default:', err.message);
+          console.warn('[InterviewController] Claude API fallback to default initial question:', err.message);
         }
       }
 
-      const mockInterview = await MockInterview.create({
-        userId: new mongoose.Types.ObjectId(userId),
+      if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(userId)) {
+        const mockInterview = await MockInterview.create({
+          userId: new mongoose.Types.ObjectId(userId),
+          role,
+          category,
+          status: 'in_progress',
+          questions: [
+            {
+              questionId,
+              questionText: initialQuestionText,
+            },
+          ],
+        });
+
+        res.status(201).json({
+          success: true,
+          message: 'Mock interview started successfully',
+          data: {
+            interviewId: mockInterview._id,
+            role: mockInterview.role,
+            question: {
+              questionId,
+              questionText: initialQuestionText,
+            },
+          },
+        });
+        return;
+      }
+
+      // In-memory dev fallback
+      const mockId = new mongoose.Types.ObjectId().toString();
+      const mockSession = {
+        _id: mockId,
+        userId,
         role,
         category,
         status: 'in_progress',
-        questions: [
-          {
-            questionId,
-            questionText: initialQuestionText,
-          },
-        ],
-      });
+        questions: [{ questionId, questionText: initialQuestionText }],
+      };
+      inMemoryInterviews.set(mockId, mockSession);
 
       res.status(201).json({
         success: true,
-        message: 'Mock interview started successfully',
+        message: 'Mock interview started successfully (dev mode)',
         data: {
-          interviewId: (mockInterview._id as any).toString(),
-          role: mockInterview.role,
-          question: {
-            questionId,
-            questionText: initialQuestionText,
-          },
+          interviewId: mockId,
+          role,
+          question: { questionId, questionText: initialQuestionText },
         },
       });
     } catch (error: any) {
       console.error('[InterviewController] Error starting interview:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to start interview',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to start interview' });
     }
   }
 
@@ -126,23 +207,20 @@ Return JSON with key "questionText": string.`;
 
       const { interviewId, answerText } = validation.data;
 
-      if (!mongoose.Types.ObjectId.isValid(interviewId)) {
-        res.status(400).json({ success: false, message: 'Invalid interviewId format' });
-        return;
+      let interview: any = null;
+      if (mongoose.connection.readyState === 1) {
+        if (mongoose.Types.ObjectId.isValid(interviewId)) {
+          interview = await MockInterview.findById(interviewId);
+        }
+      } else {
+        interview = inMemoryInterviews.get(interviewId);
       }
 
-      const interview = await MockInterview.findById(interviewId);
       if (!interview) {
         res.status(404).json({ success: false, message: 'Mock interview session not found' });
         return;
       }
 
-      if (interview.questions.length === 0) {
-        res.status(400).json({ success: false, message: 'No questions found in interview session' });
-        return;
-      }
-
-      // Get last active question
       const lastIndex = interview.questions.length - 1;
       const currentQ = interview.questions[lastIndex];
 
@@ -152,7 +230,7 @@ Return JSON with key "questionText": string.`;
 
       if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'dummy_anthropic_key') {
         try {
-          const prompt = `You are a Senior Technical Interviewer evaluating a candidate's answer for role: "${interview.role}".
+          const prompt = `You are a Senior Technical Interviewer evaluating candidate for role: "${interview.role}".
 
 Question:
 "${currentQ.questionText}"
@@ -163,9 +241,9 @@ Candidate Answer:
 Task:
 1. Evaluate candidate answer technical correctness and depth (score 0-100).
 2. Provide concise constructive feedback.
-3. Formulate the next follow-up technical interview question.
+3. Formulate next technical question.
 
-Return ONLY JSON format with structure:
+Return JSON format with structure:
 {
   "score": number,
   "feedback": string,
@@ -180,8 +258,7 @@ Return ONLY JSON format with structure:
 
           const textContent = response.content[0].type === 'text' ? response.content[0].text : '';
           const parsed = JSON.parse(textContent);
-
-          if (typeof parsed.score === 'number') score = parsed.score;
+          if (parsed.score !== undefined) score = parsed.score;
           if (parsed.feedback) feedback = parsed.feedback;
           if (parsed.nextQuestionText) nextQuestionText = parsed.nextQuestionText;
         } catch (err: any) {
@@ -189,19 +266,16 @@ Return ONLY JSON format with structure:
         }
       }
 
-      // Save answer & evaluation for current question
       currentQ.userAnswerText = answerText;
       currentQ.score = score;
       currentQ.feedback = feedback;
 
       const nextQuestionId = new mongoose.Types.ObjectId().toString();
-
-      // Stop after 5 questions or continue
-      const isCompleted = interview.questions.length >= 5;
+      const isCompleted = interview.questions.length >= 3;
 
       if (isCompleted) {
         interview.status = 'completed';
-        const totalScoreSum = interview.questions.reduce((acc, q) => acc + (q.score || 0), 0);
+        const totalScoreSum = interview.questions.reduce((acc: number, q: any) => acc + (q.score || 0), 0);
         interview.overallScore = Math.round(totalScoreSum / interview.questions.length);
       } else {
         interview.questions.push({
@@ -210,7 +284,9 @@ Return ONLY JSON format with structure:
         });
       }
 
-      await interview.save();
+      if (mongoose.connection.readyState === 1 && typeof interview.save === 'function') {
+        await interview.save();
+      }
 
       res.status(200).json({
         success: true,
@@ -231,10 +307,7 @@ Return ONLY JSON format with structure:
       });
     } catch (error: any) {
       console.error('[InterviewController] Error submitting answer:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Answer evaluation failed',
-      });
+      res.status(500).json({ success: false, message: error.message || 'Answer evaluation failed' });
     }
   }
 }

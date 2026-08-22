@@ -21,8 +21,8 @@ router.post('/videos/:id/doubt', AIController.askDoubt);
 // AI Quiz Generator endpoint
 router.post('/videos/:id/quiz', AIController.generateQuiz);
 
-// Quiz Attempt Submission endpoint
-router.post('/quizzes/:id/attempt', AIController.submitQuizAttempt);
+// AI Mind Map Generator endpoint (Phase 5 Step 2)
+router.post('/mindmap/:videoId', AIController.generateMindMap);
 
 // Video management and processing endpoints
 router.post('/videos', AIController.createAndProcessVideo);

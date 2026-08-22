@@ -13,6 +13,7 @@ import { LearnPage } from '../pages/personal/LearnPage';
 import { PracticePage } from '../pages/personal/PracticePage';
 import { CareerPage } from '../pages/personal/CareerPage';
 import { WorkspacePage } from '../pages/personal/WorkspacePage';
+import { CertificatesPage } from '../pages/personal/CertificatesPage';
 
 // Organizational Portal Pages
 import { OverviewPage } from '../pages/org/OverviewPage';
@@ -20,7 +21,7 @@ import { LearningPage } from '../pages/org/LearningPage';
 import { StudentsPage } from '../pages/org/StudentsPage';
 import { AnalyticsPage } from '../pages/org/AnalyticsPage';
 import { PlacementsPage } from '../pages/org/PlacementsPage';
-import { CertificatesPage } from '../pages/org/CertificatesPage';
+import { CertificatesPage as OrgCertificatesPage } from '../pages/org/CertificatesPage';
 import { CommunicationPage } from '../pages/org/CommunicationPage';
 import { SettingsPage } from '../pages/org/SettingsPage';
 
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/personal/learn/courses" replace /> },
               { path: 'courses', element: <LearnPage /> },
               { path: 'videos', element: <LearnPage /> },
+              { path: 'mindmap', element: <LearnPage /> },
               { path: 'saved', element: <LearnPage /> },
             ],
           },
@@ -69,6 +71,7 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/personal/practice/coding" replace /> },
               { path: 'coding', element: <PracticePage /> },
               { path: 'quizzes', element: <PracticePage /> },
+              { path: 'flashcards', element: <PracticePage /> },
             ],
           },
           {
@@ -77,6 +80,19 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/personal/career/roadmap" replace /> },
               { path: 'roadmap', element: <CareerPage /> },
               { path: 'skills', element: <CareerPage /> },
+              { path: 'resume', element: <CareerPage /> },
+              { path: 'interview', element: <CareerPage /> },
+              { path: 'placement', element: <CareerPage /> },
+            ],
+          },
+          {
+            path: 'certificates',
+            children: [
+              { index: true, element: <Navigate to="/personal/certificates/issue" replace /> },
+              { path: 'issue', element: <CertificatesPage /> },
+              { path: 'my-certificates', element: <CertificatesPage /> },
+              { path: 'verify', element: <CertificatesPage /> },
+              { path: 'verify/:id', element: <CertificatesPage /> },
             ],
           },
           { path: 'workspace', element: <WorkspacePage /> },
@@ -136,9 +152,9 @@ export const router = createBrowserRouter([
             path: 'certificates',
             children: [
               { index: true, element: <Navigate to="/org/certificates/issue" replace /> },
-              { path: 'issue', element: <CertificatesPage /> },
-              { path: 'manage', element: <CertificatesPage /> },
-              { path: 'verify', element: <CertificatesPage /> },
+              { path: 'issue', element: <OrgCertificatesPage /> },
+              { path: 'manage', element: <OrgCertificatesPage /> },
+              { path: 'verify', element: <OrgCertificatesPage /> },
             ],
           },
           {

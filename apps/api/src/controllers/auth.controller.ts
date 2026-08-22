@@ -16,7 +16,7 @@ export class AuthController {
    */
   static async register(req: Request, res: Response): Promise<void> {
     try {
-      const { fullName, email, password, role } = req.body;
+      const { fullName, email, password, role, organizationId } = req.body;
 
       if (!fullName || !email || !password) {
         res.status(400).json({
@@ -26,7 +26,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.register({ fullName, email, password, role });
+      const result = await AuthService.register({ fullName, email, password, role, organizationId });
 
       // Set httpOnly cookie for refresh token
       res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);

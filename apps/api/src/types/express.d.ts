@@ -6,6 +6,7 @@ export interface JwtPayloadUser {
   role: UserRole;
   personalWorkspaceId?: string;
   currentOrgId?: string;
+  organizationId?: string;
 }
 
 declare global {
