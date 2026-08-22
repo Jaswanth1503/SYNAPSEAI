@@ -39,7 +39,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ className }) => {
         <span>{portalConfig.shortName}</span>
       </Link>
 
-      {pathSegments.map((segment, index) => {
+      {pathSegments.map((segment: string, index: number) => {
         // Skip first segment ('personal' or 'org') since home link covers it
         if (index === 0) return null;
 

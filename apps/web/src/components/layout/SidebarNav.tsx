@@ -30,7 +30,11 @@ interface NavItem {
   badge?: string;
 }
 
-export const SidebarNav: React.FC = () => {
+interface SidebarNavProps {
+  onItemClick?: () => void;
+}
+
+export const SidebarNav: React.FC<SidebarNavProps> = ({ onItemClick }) => {
   const { scope, activeModule, setActiveModule } = useWorkspaceStore();
 
   const personalNavItems: NavItem[] = [
@@ -64,6 +68,11 @@ export const SidebarNav: React.FC = () => {
 
   const currentNavItems = scope === 'personal' ? personalNavItems : orgNavItems;
 
+  const handleItemClick = (id: ModuleId) => {
+    setActiveModule(id);
+    onItemClick?.();
+  };
+
   return (
     <aside className="w-64 border-r border-slate-800 bg-slate-900/60 dark:bg-[#070a11]/80 backdrop-blur-md flex flex-col shrink-0 hidden md:flex">
       {/* Header Label */}
@@ -82,7 +91,7 @@ export const SidebarNav: React.FC = () => {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveModule(item.id)}
+              onClick={() => handleItemClick(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
                 isActive
                   ? 'bg-gradient-to-r from-cyan-500/20 via-indigo-500/10 to-transparent text-cyan-300 border border-cyan-500/30 shadow-md shadow-cyan-500/10 glow-cyan'
