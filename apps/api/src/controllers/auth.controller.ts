@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { AuthService } from '../services/auth.service';
+import { User } from '../models/User';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -51,7 +53,7 @@ export class AuthController {
    */
   static async register(req: Request, res: Response): Promise<void> {
     try {
-      const { fullName, email, password, role } = req.body;
+      const { fullName, email, password, role, organizationId } = req.body;
 
       if (!fullName || !email || !password) {
         res.status(400).json({
@@ -61,7 +63,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.register({ fullName, email, password, role });
+      const result = await AuthService.register({ fullName, email, password, role, organizationId });
 
       // Set httpOnly cookie for refresh token
       res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
@@ -164,5 +166,54 @@ export class AuthController {
       success: true,
       message: 'Logged out successfully',
     });
+  }
+
+  /**
+   * GET /api/v1/auth/me
+   */
+  static async getMe(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required' });
+        return;
+      }
+
+      if (mongoose.connection.readyState === 1) {
+        const user = await User.findById(userId).select('-passwordHash');
+        if (!user) {
+          res.status(404).json({ success: false, message: 'User not found' });
+          return;
+        }
+
+        res.status(200).json({
+          success: true,
+          data: { user },
+        });
+        return;
+      }
+
+      // Offline dev fallback
+      res.status(200).json({
+        success: true,
+        data: {
+          user: {
+            _id: userId,
+            fullName: 'QA Student',
+            email: req.user?.email || 'qa_student@synapseai.io',
+            role: req.user?.role || 'student',
+            personalWorkspaceId: req.user?.personalWorkspaceId || 'ws_dev_123',
+            currentOrgId: req.user?.currentOrgId || 'ws_dev_123',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to fetch user profile',
+      });
+    }
   }
 }

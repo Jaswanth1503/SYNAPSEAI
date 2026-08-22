@@ -1,0 +1,93 @@
+/* apps/web/src/styles/tokens.css */
+:root {
+  /* ==========================================================================
+     1. COLOR TOKENS (Synced with Frontend/colorPallet (1).pdf - MP025 Palette)
+     ========================================================================== */
+  
+  /* Brand Palette Swatches */
+  --color-oceanic-noir: #172B36;         /* Primary Dark Base */
+  --color-nocturnal-expedition: #114C5A; /* Dark Surface & Navigation */
+  --color-forsythia: #FFC801;            /* Primary Accent Gold */
+  --color-deep-saffron: #FF9932;         /* Secondary Accent Orange */
+  --color-mystic-mint: #D9E8E2;          /* Light Muted Surface */
+  --color-arctic-powder: #F1F6F4;        /* Primary Light Base */
+
+  /* Semantic UI Tokens (Dark Mode Default) */
+  --color-bg-app: var(--color-oceanic-noir);
+  --color-bg-surface: var(--color-nocturnal-expedition);
+  --color-bg-surface-hover: #165b6b;
+  --color-bg-elevated: #1a6779;
+
+  --color-text-primary: var(--color-arctic-powder);
+  --color-text-secondary: var(--color-mystic-mint);
+  --color-text-muted: #7fa19e;
+
+  /* Accent & Interactive States */
+  --color-action-primary: var(--color-forsythia);
+  --color-action-primary-hover: #e6b400;
+  --color-action-primary-text: var(--color-oceanic-noir);
+
+  --color-action-secondary: var(--color-deep-saffron);
+  --color-action-secondary-hover: #e58828;
+  --color-action-secondary-text: var(--color-oceanic-noir);
+
+  /* Portal Accent Distinction */
+  --portal-personal-accent: var(--color-forsythia);
+  --portal-org-accent: var(--color-deep-saffron);
+
+  /* Status Colors */
+  --color-status-success: #10B981;
+  --color-status-warning: var(--color-forsythia);
+  --color-status-error: #EF4444;
+  --color-status-info: var(--color-deep-saffron);
+
+  --color-border: #1e5967;
+  --color-border-subtle: #164652;
+
+  /* ==========================================================================
+     2. TYPOGRAPHY TOKENS (Synced with Frontend/fonts.pdf)
+     ========================================================================== */
+  --font-family-header: 'JetBrains Mono', monospace; /* Headers & Code Blocks */
+  --font-family-body: 'Inter', sans-serif;           /* UI & Body Text */
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ==========================================================================
+     3. SPACING & RADIUS TOKENS
+     ========================================================================== */
+  --spacing-1: 0.25rem;  /* 4px */
+  --spacing-2: 0.5rem;   /* 8px */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Standard Solid UI Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+
+  /* ==========================================================================
+     4. RESPONSIVE BREAKPOINT TOKENS
+     ========================================================================== */
+  --breakpoint-mobile: 375px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-widescreen: 1440px;
+}

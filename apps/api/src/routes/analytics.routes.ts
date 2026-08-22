@@ -4,10 +4,19 @@ import { requireAuth, requireRole } from '../middleware/auth';
 
 const router = Router();
 
-// Require Auth & Restrict to Org Admins or Instructors
+// Require Auth
 router.use(requireAuth);
-router.use(requireRole(['org_admin', 'instructor']));
 
-router.get('/orgs/:id/analytics', AnalyticsController.getCohortAnalytics);
+// Student Skill Gap Analytics Endpoint: GET /api/v1/analytics/skills/gap
+router.get('/skills/gap', AnalyticsController.getSkillGapAnalytics);
+
+// Student Personalized Career Roadmap Endpoint: GET /api/v1/analytics/career/roadmap
+router.get('/career/roadmap', AnalyticsController.getCareerRoadmap);
+
+// Student Personalized Recommendations Endpoint: GET /api/v1/analytics/recommendations
+router.get('/recommendations', AnalyticsController.getRecommendations);
+
+// Org Admins & Instructors Cohort Analytics Endpoint
+router.get('/orgs/:id/analytics', requireRole(['org_admin', 'instructor']), AnalyticsController.getCohortAnalytics);
 
 export default router;

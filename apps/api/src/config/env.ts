@@ -1,7 +1,10 @@
 import dotenv from 'dotenv';
+import path from 'path';
 import { z } from 'zod';
 
+// Load .env from both process.cwd() and apps/api/.env
 dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -17,6 +20,9 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional().default('dummy_openai_key'),
   ANTHROPIC_API_KEY: z.string().optional().default('dummy_anthropic_key'),
   JUDGE0_API_URL: z.string().default('https://judge0-ce.p.rapidapi.com'),
+  CLOUDINARY_CLOUD_NAME: z.string().optional().default('dummy_cloud_name'),
+  CLOUDINARY_API_KEY: z.string().optional().default('dummy_api_key'),
+  CLOUDINARY_API_SECRET: z.string().optional().default('dummy_api_secret'),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -7,6 +7,7 @@ const router = Router();
 // Protect mock interview endpoints with requireAuth
 router.use(requireAuth);
 
+router.post('/generate-questions', InterviewController.generateQuestions);
 router.post('/start', InterviewController.startInterview);
 router.post('/answer', InterviewController.submitAnswer);
 

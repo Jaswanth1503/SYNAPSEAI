@@ -7,7 +7,8 @@ const router = Router();
 // Public Verification Endpoint
 router.get('/verify/:id', CertificateController.verifyCertificate);
 
-// Protected Certificate Generation Route
+// Protected Certificate Routes
+router.get('/my-certificates', requireAuth, CertificateController.getMyCertificates);
 router.post('/generate', requireAuth, CertificateController.generateCertificate);
 
 export default router;
